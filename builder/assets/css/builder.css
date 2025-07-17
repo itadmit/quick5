@@ -1,0 +1,256 @@
+/* Builder CSS */
+body {
+    font-family: 'Noto Sans Hebrew', sans-serif;
+}
+
+/* Global Section Width Classes */
+.section-width-container {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.section-width-full {
+    width: 100%;
+}
+
+.section-width-custom {
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+/* Custom styles for better UX */
+#previewFrame {
+    background: white;
+    border: none;
+}
+
+/* Form styling improvements */
+input[type="color"] {
+    cursor: pointer;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Save button states */
+#saveBtn.saving {
+    background-color: #6B7280 !important;
+}
+
+#saveBtn.saved {
+    background-color: #10B981 !important;
+}
+
+/* Status message */
+.status-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 1000;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.status-message.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.status-message.success {
+    background: rgba(16, 185, 129, 0.9);
+}
+
+.status-message.error {
+    background: rgba(239, 68, 68, 0.9);
+}
+
+/* Sliding panels */
+#slidingContainer {
+    height: 100vh;
+}
+
+#sectionsPanel,
+#settingsPanel {
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* Back button styling */
+#backButton {
+    transition: all 0.2s ease;
+}
+
+#backButton:hover {
+    transform: scale(1.1);
+    background-color: #E5E7EB !important;
+}
+
+/* Sections styling */
+.section-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.section-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-item.active {
+    border-color: #3B82F6 !important;
+    background-color: #EFF6FF !important;
+}
+
+.settings-btn {
+    transition: all 0.2s ease;
+}
+
+.settings-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Settings panel animation */
+#settingsPanel {
+    animation: slideIn 0.3s ease;
+}
+
+#settingsPanel.hidden {
+    animation: slideOut 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+/* Section Actions */
+.section-actions {
+    transition: max-height 0.3s ease-in-out;
+}
+
+.action-btn {
+    transition: all 0.2s ease;
+    font-size: 12px;
+    min-width: 32px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Toggle Actions Button */
+.toggle-actions-btn {
+    transition: all 0.2s ease;
+}
+
+.toggle-actions-btn:hover {
+    background-color: #F3F4F6 !important;
+    transform: scale(1.1);
+}
+
+.toggle-actions-btn i {
+    transition: transform 0.3s ease;
+}
+
+.action-btn.move-up-btn:hover,
+.action-btn.move-down-btn:hover {
+    background-color: #DBEAFE !important;
+    border-color: #3B82F6;
+}
+
+.action-btn.duplicate-btn:hover {
+    background-color: #DCFCE7 !important;
+    border-color: #16A34A;
+}
+
+.action-btn.hide-btn:hover {
+    background-color: #FEF3C7 !important;
+    border-color: #D97706;
+}
+
+.action-btn.delete-btn:hover {
+    background-color: #FEE2E2 !important;
+    border-color: #DC2626;
+}
+
+/* Hidden section styling */
+.section-hidden {
+    background-color: #F9FAFB !important;
+    border-color: #E5E7EB !important;
+}
+
+.section-hidden h3 {
+    color: #9CA3AF !important;
+}
+
+.section-hidden p {
+    color: #D1D5DB !important;
+}
+
+.section-hidden .action-btn {
+    opacity: 0.6;
+}
+
+/* Add section button */
+.add-section-btn {
+    transition: all 0.3s ease;
+}
+
+.add-section-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Deletion animation */
+.section-item.deleting {
+    transition: all 0.3s ease !important;
+    transform: translateX(-100%) !important;
+    opacity: 0 !important;
+}
+
+/* Smooth transitions */
+* {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+} 

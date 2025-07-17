@@ -1,0 +1,46 @@
+{
+  "page_type": "contact", 
+  "sections": [
+    {
+      "type": "hero",
+      "id": "hero_1",
+      "order": 1,
+      "data": {
+        "title": "צור קשר",
+        "subtitle": "נשמח לשמוע ממך ולעזור בכל שאלה",
+        "buttons": [
+          {
+            "text": "שלח הודעה",
+            "link": "#contact-form",
+            "newTab": false,
+            "style": "filled",
+            "rounded": 8,
+            "fullWidth": false,
+            "icon": "ri-mail-line"
+          }
+        ],
+        "bgType": "gradient",
+        "bgGradient1": "#667eea",
+        "bgGradient2": "#764ba2",
+        "bgGradientDirection": "to-br",
+        "titleColor": "#ffffff",
+        "subtitleColor": "#f7fafc",
+        "titleFontSize": 42,
+        "subtitleFontSize": 18,
+        "titleFontSize_mobile": 28,
+        "subtitleFontSize_mobile": 16,
+        "width": "container",
+        "contentPosition": "center-center",
+        "heightType": "vh",
+        "heightValue": 350,
+        "heightValue_mobile": 250,
+        "paddingTop": 60,
+        "paddingBottom": 60,
+        "titleTag": "h1",
+        "subtitleTag": "p",
+        "buttonFontSize": 16,
+        "buttonFontSize_mobile": 14
+      }
+    }
+  ]
+} 

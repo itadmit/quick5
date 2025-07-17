@@ -1,0 +1,46 @@
+.peer:checked ~ .peer-checked\:after\:translate-x-5::after{
+    --tw-translate-x: -100% !important;
+}
+
+/* Product search results styles */
+.search-results {
+    border-top: none !important;
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+.search-results .animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Improve search input styling when focused */
+.product-search:focus + .search-results {
+    border-color: #3b82f6;
+}
+
+/* Better scrollbar for search results */
+.search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-results::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.search-results::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.search-results::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

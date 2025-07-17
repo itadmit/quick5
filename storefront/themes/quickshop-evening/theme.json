@@ -1,0 +1,149 @@
+{
+  "name": "QuickShop Evening",
+  "version": "1.0.0",
+  "description": "תבנית אלגנטית לחנויות מקוונות עם עיצוב מודרני",
+  "author": "QuickShop Team",
+  "preview_image": "/admin/assets/images/themes/quickshop-evening.jpg",
+  "assets": {
+    "css": "/storefront/themes/quickshop-evening/assets/css/theme.css",
+    "js": "/storefront/themes/quickshop-evening/assets/js/theme.js"
+  },
+  "settings": {
+    "colors": {
+      "primary_color": {
+        "type": "color",
+        "label": "צבע ראשי",
+        "default": "#3B82F6",
+        "description": "הצבע הראשי של החנות"
+      },
+      "secondary_color": {
+        "type": "color", 
+        "label": "צבע משני",
+        "default": "#1E40AF",
+        "description": "צבע משני לכפתורים ולינקים"
+      },
+      "accent_color": {
+        "type": "color",
+        "label": "צבע הדגשה",
+        "default": "#F59E0B",
+        "description": "צבע להדגשות ומבצעים"
+      },
+      "text_color": {
+        "type": "color",
+        "label": "צבע טקסט",
+        "default": "#1F2937",
+        "description": "צבע הטקסט הראשי"
+      },
+      "background_color": {
+        "type": "color",
+        "label": "צבע רקע",
+        "default": "#FFFFFF",
+        "description": "צבע הרקע הראשי"
+      }
+    },
+    "typography": {
+      "font_family": {
+        "type": "select",
+        "label": "גופן ראשי",
+        "options": {
+          "Noto Sans Hebrew": "Noto Sans Hebrew",
+          "Assistant": "Assistant",
+          "Rubik": "Rubik",
+          "Heebo": "Heebo"
+        },
+        "default": "Noto Sans Hebrew"
+      },
+      "font_size_base": {
+        "type": "select",
+        "label": "גודל גופן בסיסי",
+        "options": {
+          "14px": "קטן",
+          "16px": "רגיל",
+          "18px": "גדול"
+        },
+        "default": "16px"
+      }
+    },
+    "layout": {
+      "container_width": {
+        "type": "select",
+        "label": "רוחב מכל",
+        "options": {
+          "1200px": "רגיל",
+          "1400px": "רחב",
+          "100%": "מלא"
+        },
+        "default": "1200px"
+      },
+      "header_style": {
+        "type": "select",
+        "label": "סגנון כותרת",
+        "options": {
+          "simple": "פשוט",
+          "centered": "מרכזי",
+          "modern": "מודרני"
+        },
+        "default": "simple"
+      }
+    },
+    "tracking": {
+      "google_analytics": {
+        "type": "text",
+        "label": "Google Analytics ID",
+        "placeholder": "G-XXXXXXXXXX",
+        "description": "מזהה Google Analytics למעקב אחר תנועה"
+      },
+      "facebook_pixel": {
+        "type": "text", 
+        "label": "Facebook Pixel ID",
+        "placeholder": "123456789",
+        "description": "מזהה Facebook Pixel למעקב אחר המרות"
+      },
+      "google_tag_manager": {
+        "type": "text",
+        "label": "Google Tag Manager ID",
+        "placeholder": "GTM-XXXXXXX",
+        "description": "מזהה Google Tag Manager"
+      }
+    },
+    "custom_code": {
+      "custom_css": {
+        "type": "textarea",
+        "label": "CSS מותאם אישית",
+        "description": "הוסף CSS מותאם אישית לתבנית"
+      },
+      "custom_head_code": {
+        "type": "textarea",
+        "label": "קוד ב-<head>",
+        "description": "קוד שיתווסף לתוך תג ה-head"
+      },
+      "custom_body_start_code": {
+        "type": "textarea",
+        "label": "קוד בתחילת <body>",
+        "description": "קוד שיתווסף מיד אחרי פתיחת תג ה-body"
+      },
+      "custom_footer_code": {
+        "type": "textarea",
+        "label": "קוד בתחתית הדף",
+        "description": "קוד שיתווסף לפני סגירת תג ה-body"
+      }
+    }
+  },
+  "supports": {
+    "visual_builder": true,
+    "code_editor": true,
+    "responsive": true,
+    "rtl": true,
+    "dark_mode": false,
+    "custom_css": true
+  },
+  "blocks": [
+    "hero",
+    "product-grid",
+    "testimonials",
+    "features",
+    "newsletter",
+    "text-image",
+    "gallery"
+  ]
+} 

@@ -1,0 +1,15 @@
+{
+  "name": "Hero Section",
+  "description": "בלוק כותרת ראשית עם רקע ותמונה",
+  "icon": "ri-image-line",
+  "category": "layout",
+  "preview_image": "/admin/assets/images/blocks/hero-preview.jpg",
+  "supports": {
+    "background_image": true,
+    "background_color": true,
+    "text_styling": true,
+    "buttons": true,
+    "responsive": true
+  },
+  "version": "1.0.0"
+} 
