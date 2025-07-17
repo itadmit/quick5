@@ -58,7 +58,13 @@ try {
  */
 function handleLoadPage($storeId) {
     $pageType = $_GET['page_type'] ?? 'home';
-    
+    handleLoadPageLogic($storeId, $pageType);
+}
+
+/**
+ * לוגיקה משותפת לטעינת דף
+ */
+function handleLoadPageLogic($storeId, $pageType) {
     try {
         global $pdo;
         
@@ -77,7 +83,7 @@ function handleLoadPage($storeId) {
             echo json_encode([
                 'success' => true,
                 'source' => 'database',
-                'page_data' => $pageData,
+                'data' => $pageData,
                 'last_updated' => $result['updated_at']
             ]);
         } else {
@@ -86,7 +92,7 @@ function handleLoadPage($storeId) {
             echo json_encode([
                 'success' => true,
                 'source' => 'demo',
-                'page_data' => $demoData,
+                'data' => $demoData,
                 'last_updated' => null
             ]);
         }
@@ -97,13 +103,24 @@ function handleLoadPage($storeId) {
 }
 
 /**
- * שמירת דף למסד נתונים
+ * שמירת דף למסד נתונים או טעינה דרך POST
  */
 function handleSavePage($storeId) {
     $input = file_get_contents('php://input');
     $data = json_decode($input, true);
     
-    if (!$data || !isset($data['page_type']) || !isset($data['page_data'])) {
+    if (!$data) {
+        throw new Exception('נתונים לא תקינים');
+    }
+    
+    // Handle load action via POST
+    if (isset($data['action']) && $data['action'] === 'load') {
+        $pageType = $data['page_type'] ?? 'home';
+        return handleLoadPageLogic($storeId, $pageType);
+    }
+    
+    // Handle save action
+    if (!isset($data['page_type']) || !isset($data['page_data'])) {
         throw new Exception('נתונים לא תקינים');
     }
     
