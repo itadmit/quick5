@@ -22,7 +22,7 @@ class BuilderCore {
         this.bindEvents();
         this.loadExistingSections();
         this.setupDeviceToggle();
-        this.setupAutoSave();
+        // this.setupAutoSave(); // מבוטל - שמירה אוטומטית
     }
     
     /**
@@ -74,8 +74,8 @@ class BuilderCore {
         this.updatePreview();
         this.selectSection(sectionId);
         
-        // Auto-save
-        this.autoSave();
+        // Auto-save מבוטל
+        // this.autoSave();
     }
     
     /**
@@ -90,8 +90,25 @@ class BuilderCore {
                 subtitleColor: '#E5E7EB',
                 bgColor: '#3B82F6',
                 heightDesktop: '75vh',
-                heightMobile: '50vh',
-                bgType: 'color'
+                bgType: 'color',
+                heroTitleTextType: 'h1',
+                heroSubtitleTextType: 'p',
+                buttons: [
+                    {
+                        text: 'קנה עכשיו',
+                        url: '#',
+                        style: 'primary',
+                        openInNewTab: false,
+                        paddingTop: '12',
+                        paddingBottom: '12',
+                        paddingLeft: '24',
+                        paddingRight: '24',
+                        marginTop: '0',
+                        marginBottom: '8',
+                        marginLeft: '4',
+                        marginRight: '4'
+                    }
+                ]
             },
             'category-grid': {
                 title: 'הקטגוריות שלנו',
@@ -251,16 +268,46 @@ class BuilderCore {
     updateSectionSetting(input) {
         if (!this.currentSection) return;
         
+        console.log('🔧 DEBUG: Updating setting', input.name, input.value);
+        
         const settingName = input.name;
-        const settingValue = input.type === 'checkbox' ? input.checked : input.value;
+        let settingValue = input.type === 'checkbox' ? input.checked : input.value;
         
-        this.currentSection.settings[settingName] = settingValue;
+        // Handle button repeater arrays
+        if (settingName.includes('buttons[')) {
+            // Parse button array structure
+            const match = settingName.match(/buttons\[(\d+)\]\[(.+)\]/);
+            if (match) {
+                const buttonIndex = parseInt(match[1]);
+                const buttonProperty = match[2];
+                
+                // Initialize buttons array if it doesn't exist
+                if (!this.currentSection.settings.buttons) {
+                    this.currentSection.settings.buttons = [];
+                }
+                
+                // Initialize button object if it doesn't exist
+                if (!this.currentSection.settings.buttons[buttonIndex]) {
+                    this.currentSection.settings.buttons[buttonIndex] = {};
+                }
+                
+                // Set the specific button property
+                this.currentSection.settings.buttons[buttonIndex][buttonProperty] = settingValue;
+                
+                console.log('🔧 DEBUG: Updated button', buttonIndex, buttonProperty, settingValue);
+            }
+        } else {
+            // Regular setting update
+            this.currentSection.settings[settingName] = settingValue;
+        }
         
-        // עדכון התצוגה המקדימה
+        console.log('🔧 DEBUG: Current section after update', this.currentSection);
+        
+        // עדכון התצוגה המקדימה מייד
         this.updatePreview();
         
-        // Auto-save
-        this.autoSave();
+        // Auto-save מבוטל
+        // this.autoSave();
     }
     
     /**
@@ -291,7 +338,7 @@ class BuilderCore {
         }
         
         this.updatePreview();
-        this.autoSave();
+        // this.autoSave(); // מבוטל - שמירה אוטומטית
     }
     
     /**
@@ -400,29 +447,57 @@ class BuilderCore {
      * שמירת דף
      */
     async savePage() {
+        console.log('🔧 DEBUG: Starting save...', {
+            pageId: this.pageId,
+            storeId: this.storeId,
+            sectionsCount: this.sections.length,
+            sections: this.sections
+        });
+        
         try {
-            const response = await fetch('../api/save-page.php', {
+            const requestData = {
+                pageId: this.pageId,
+                storeId: this.storeId,
+                sections: this.sections
+            };
+            
+            console.log('🔧 DEBUG: Sending request to api/save-page.php', requestData);
+            
+            const response = await fetch('api/save-page.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    pageId: this.pageId,
-                    storeId: this.storeId,
-                    sections: this.sections
-                })
+                body: JSON.stringify(requestData)
             });
             
-            const result = await response.json();
+            console.log('🔧 DEBUG: Response status:', response.status);
+            console.log('🔧 DEBUG: Response headers:', Object.fromEntries(response.headers.entries()));
+            
+            const responseText = await response.text();
+            console.log('🔧 DEBUG: Raw response:', responseText);
+            
+            let result;
+            try {
+                result = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('🔧 DEBUG: JSON parse error:', parseError);
+                console.error('🔧 DEBUG: Response was not valid JSON:', responseText);
+                throw new Error('התגובה מהשרת לא תקינה');
+            }
+            
+            console.log('🔧 DEBUG: Parsed result:', result);
             
             if (result.success) {
                 this.showNotification('הדף נשמר בהצלחה', 'success');
+                console.log('🔧 DEBUG: Save successful!');
             } else {
-                this.showNotification('שגיאה בשמירת הדף', 'error');
+                this.showNotification('שגיאה בשמירת הדף: ' + (result.message || 'לא ידוע'), 'error');
+                console.error('🔧 DEBUG: Save failed:', result);
             }
         } catch (error) {
-            console.error('Save error:', error);
-            this.showNotification('שגיאה בשמירת הדף', 'error');
+            console.error('🔧 DEBUG: Save error:', error);
+            this.showNotification('שגיאה בשמירת הדף: ' + error.message, 'error');
         }
     }
     

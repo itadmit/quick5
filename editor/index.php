@@ -33,29 +33,23 @@ try {
     
     if (!$currentPage) {
         // יצירת דף חדש אם לא קיים
-        $defaultData = json_encode([
-            [
-                'type' => 'hero',
-                'id' => 'hero_' . uniqid(),
-                'settings' => [
-                    'title' => 'ברוכים הבאים לחנות שלנו',
-                    'subtitle' => 'גלו את המוצרים הטובים ביותר במחירים הטובים ביותר',
-                    'bgColor' => '#3B82F6',
-                    'titleColor' => '#FFFFFF',
-                    'subtitleColor' => '#E5E7EB'
-                ]
-            ]
-        ]);
+        $defaultData = json_encode([]);
         
-        $stmt = $pdo->prepare("INSERT INTO builder_pages (store_id, page_type, page_name, page_data, is_published) VALUES (?, 'home', 'עמוד בית', ?, 0)");
+        $stmt = $pdo->prepare("
+            INSERT INTO builder_pages (store_id, page_type, page_data, is_published, created_at, updated_at) 
+            VALUES (?, 'home', ?, 0, NOW(), NOW())
+        ");
         $stmt->execute([$store['id'], $defaultData]);
+        $newPageId = $pdo->lastInsertId();
+        
         $currentPage = [
-            'id' => $pdo->lastInsertId(),
+            'id' => $newPageId,
             'page_data' => $defaultData,
             'is_published' => 0
         ];
     }
     
+    // טעינת סקשנים קיימים או דף ריק
     $sections = json_decode($currentPage['page_data'], true) ?: [];
 } catch (Exception $e) {
     error_log("Error loading page data: " . $e->getMessage());
@@ -68,7 +62,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>עורך הבילדר - <?php echo htmlspecialchars($store['store_name']); ?></title>
+    <title>עורך הבילדר - <?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -167,7 +161,7 @@ try {
         <div class="editor-toolbar">
             <div class="flex items-center gap-4">
                 <h1 class="text-lg font-semibold">עורך הבילדר</h1>
-                <span class="text-sm text-gray-300"><?php echo htmlspecialchars($store['store_name']); ?></span>
+                <span class="text-sm text-gray-300"><?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></span>
             </div>
             
             <div class="flex items-center gap-3">

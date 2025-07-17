@@ -20,6 +20,18 @@ if (!function_exists('esc_html')) {
  * רינדור בוחר צבע
  */
 function renderColorPicker($id, $label, $defaultValue = '#000000') {
+    // Convert ID to proper field name
+    $fieldName = '';
+    if (strpos($id, 'heroTitleColor') !== false) {
+        $fieldName = 'titleColor';
+    } elseif (strpos($id, 'heroSubtitleColor') !== false) {
+        $fieldName = 'subtitleColor';
+    } elseif (strpos($id, 'heroBgColor') !== false) {
+        $fieldName = 'bgColor';
+    } else {
+        // Fallback to original logic
+        $fieldName = strtolower(str_replace('hero', '', $id)) . 'Color';
+    }
     ?>
     <div class="color-picker">
         <label for="<?php echo esc_attr($id); ?>" class="block text-xs font-medium text-gray-600 mb-2">
@@ -28,7 +40,7 @@ function renderColorPicker($id, $label, $defaultValue = '#000000') {
         <div class="flex items-center gap-3">
             <input type="color" 
                    id="<?php echo esc_attr($id); ?>" 
-                   name="<?php echo esc_attr(strtolower(str_replace('hero', '', $id))); ?>Color"
+                   name="<?php echo esc_attr($fieldName); ?>"
                    value="<?php echo esc_attr($defaultValue); ?>"
                    class="w-12 h-8 border border-gray-300 rounded cursor-pointer">
             <input type="text" 

@@ -3,6 +3,19 @@
  * Hero Section Template - תמלילט סקשן הירו
  */
 
+// הגדרת פונקציות עזר אם לא קיימות
+if (!function_exists('esc_attr')) {
+    function esc_attr($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
 // ברירות מחדל
 $defaultSettings = [
     'title' => 'ברוכים הבאים לחנות שלנו',
@@ -24,6 +37,29 @@ $css = generateHeroCSS($sectionId, $settings);
 
 <style>
 <?php echo $css; ?>
+
+/* Ensure consistent styling with JavaScript render */
+#<?php echo $sectionId; ?> .hero-title {
+    color: <?php echo esc_attr($settings['titleColor']); ?>;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+#<?php echo $sectionId; ?> .hero-subtitle {
+    color: <?php echo esc_attr($settings['subtitleColor']); ?>;
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    #<?php echo $sectionId; ?> .hero-title {
+        font-size: 3.75rem;
+    }
+    #<?php echo $sectionId; ?> .hero-subtitle {
+        font-size: 1.5rem;
+    }
+}
 </style>
 
 <section id="<?php echo esc_attr($sectionId); ?>" class="hero-section relative overflow-hidden">
@@ -51,34 +87,38 @@ $css = generateHeroCSS($sectionId, $settings);
     
     <!-- Content Container -->
     <div class="relative z-20 container mx-auto px-4 h-full flex items-center">
-        <div class="hero-content w-full">
+        <div class="hero-content w-full text-center">
             <!-- Title -->
             <?php if (!empty($settings['title'])): ?>
-                <h1 class="hero-title mb-4">
+                <h1 class="hero-title">
                     <?php echo esc_html($settings['title']); ?>
                 </h1>
             <?php endif; ?>
             
             <!-- Subtitle -->
             <?php if (!empty($settings['subtitle'])): ?>
-                <p class="hero-subtitle mb-8">
+                <p class="hero-subtitle">
                     <?php echo esc_html($settings['subtitle']); ?>
                 </p>
             <?php endif; ?>
             
             <!-- Buttons -->
-            <?php if (!empty($settings['buttons'])): ?>
-                <div class="hero-buttons flex flex-wrap gap-4">
+            <div class="hero-buttons flex flex-wrap gap-4 justify-center">
+                <?php if (!empty($settings['buttons'])): ?>
                     <?php foreach ($settings['buttons'] as $button): ?>
                         <?php if (!empty($button['text'])): ?>
                             <a href="<?php echo esc_url($button['url'] ?? '#'); ?>" 
-                               class="btn btn-<?php echo esc_attr($button['style'] ?? 'primary'); ?>">
+                               class="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                                 <?php echo esc_html($button['text']); ?>
                             </a>
                         <?php endif; ?>
                     <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <a href="#" class="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                        קנה עכשיו
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </section>
