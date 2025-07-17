@@ -102,7 +102,7 @@ window.HeroSection = class HeroSection {
      */
     async loadData() {
         try {
-            const response = await fetch('builder/api/pages.php', {
+            const response = await fetch('api/pages.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ window.HeroSection = class HeroSection {
      */
     async saveData() {
         try {
-            const response = await fetch('builder/api/pages.php', {
+            const response = await fetch('api/pages.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
