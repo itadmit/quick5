@@ -3,7 +3,7 @@
  */
 
 // Debug mode - שנה ל-true כדי לראות לוגים מפורטים
-const DEBUG_MODE = false;
+const DEBUG_MODE = true;
 
 // פונקציית debug
 const debugLog = (...args) => {
@@ -23,6 +23,8 @@ class SimpleBuilder {
     }
     
     init() {
+        console.log('=== Builder initialization started ===');
+        
         // Get iframe reference
         this.iframe = document.getElementById('previewFrame');
         
@@ -31,22 +33,30 @@ class SimpleBuilder {
             return;
         }
         
+        console.log('Iframe found');
         debugLog('Builder initialized');
         
         // יצירת מנהל הסקשנים
+        console.log('Creating SectionManager...');
         this.sectionManager = new SectionManager(this);
         
         // יצירת מנהל פעולות הסקשנים
+        console.log('Creating SectionActionsManager...');
         this.actionsManager = new SectionActionsManager(this);
         
         // Setup iframe communication
+        console.log('Setting up iframe communication...');
         this.setupIframeCommunication();
         
         // Setup global listeners
+        console.log('Setting up global listeners...');
         this.setupGlobalListeners();
         
         // Setup save button
+        console.log('Setting up save button...');
         this.setupSaveButton();
+        
+        console.log('=== Builder initialization completed ===');
     }
     
     setupIframeCommunication() {
@@ -79,11 +89,13 @@ class SimpleBuilder {
             // Settings button click
             if (e.target.closest('.settings-btn')) {
                 const sectionType = e.target.closest('.settings-btn').dataset.section;
+                console.log(`Settings button clicked for section: ${sectionType}`);
                 this.openSectionSettings(sectionType);
             }
             
             // Back button click
             if (e.target.closest('#backButton')) {
+                console.log('Back button clicked');
                 this.closeSectionSettings();
             }
         });
@@ -154,16 +166,28 @@ class SimpleBuilder {
      * אנימציה להגדרות
      */
     slideToSettings() {
+        console.log('Sliding to settings panel...');
         const slidingContainer = document.getElementById('slidingContainer');
-        slidingContainer.style.transform = 'translateX(50%)';
+        if (slidingContainer) {
+            slidingContainer.style.transform = 'translateX(-50%)';
+            console.log('Transform applied: translateX(-50%)');
+        } else {
+            console.error('slidingContainer not found!');
+        }
     }
     
     /**
      * אנימציה לסקשנים
      */
     slideToSections() {
+        console.log('Sliding to sections panel...');
         const slidingContainer = document.getElementById('slidingContainer');
-        slidingContainer.style.transform = 'translateX(0%)';
+        if (slidingContainer) {
+            slidingContainer.style.transform = 'translateX(0%)';
+            console.log('Transform applied: translateX(0%)');
+        } else {
+            console.error('slidingContainer not found!');
+        }
     }
     
     /**

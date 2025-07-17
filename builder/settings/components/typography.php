@@ -3,6 +3,19 @@
  * Typography Component - רכיב הגדרות טיפוגרפיה
  */
 
+// Helper functions for escaping
+if (!function_exists('esc_attr')) {
+    function esc_attr($text) {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html($text) {
+        return htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
+    }
+}
+
 /**
  * רינדור בקרי טיפוגרפיה
  */

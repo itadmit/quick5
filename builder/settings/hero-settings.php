@@ -3,6 +3,8 @@
  * Hero Settings - הגדרות סקשן הירו
  */
 
+echo "<!-- Hero Settings PHP loaded at " . date('Y-m-d H:i:s') . " -->\n";
+
 // Include component functions
 require_once __DIR__ . '/components/typography.php';
 require_once __DIR__ . '/components/colors.php';
@@ -10,16 +12,23 @@ require_once __DIR__ . '/components/spacing.php';
 require_once __DIR__ . '/components/background.php';
 require_once __DIR__ . '/components/layout.php';
 require_once __DIR__ . '/components/buttons-repeater.php';
+
+echo "<!-- All components loaded successfully -->\n";
 ?>
 
-<div id="heroSettings" class="section-settings">
+<div id="heroSettings" class="section-settings p-6">
     <!-- Header -->
     <div class="settings-header border-b border-gray-200 pb-4 mb-6">
-        <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <i class="ri-image-line"></i>
-            הגדרות Hero
-        </h2>
-        <p class="text-gray-600 text-sm mt-1">ערוך את המראה והתוכן של סקשן הפתיחה</p>
+        <div class="flex items-center gap-3 mb-2">
+            <button id="backButton" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors">
+                <i class="ri-arrow-right-line text-gray-600"></i>
+            </button>
+            <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                <i class="ri-image-line"></i>
+                הגדרות Hero
+            </h2>
+        </div>
+        <p class="text-gray-600 text-sm">ערוך את המראה והתוכן של סקשן הפתיחה</p>
     </div>
 
     <form id="heroForm" class="space-y-6">

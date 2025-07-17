@@ -65,14 +65,23 @@ class SectionManager {
      */
     async openSectionSettings(sectionType) {
         try {
+            console.log(`=== Opening section settings for: ${sectionType} ===`);
+            
             // טעינת הגדרות ה-UI
+            console.log('Step 1: Loading settings UI...');
             await this.loadSectionSettingsUI(sectionType);
             
+            // הזזה לפאנל ההגדרות
+            console.log('Step 2: Sliding to settings panel...');
+            this.builder.slideToSettings();
+            
             // טעינת הסקשן אם לא נטען
+            console.log('Step 3: Loading section instance...');
             const section = await this.loadSection(sectionType);
             
             // סגירת הסקשן הקודם
             if (this.currentSection) {
+                console.log('Step 4: Closing previous section...');
                 await this.currentSection.onClose();
             }
             
@@ -80,8 +89,10 @@ class SectionManager {
             window.currentSection = section; // Make it globally available
             
             // פתיחת ההגדרות
+            console.log('Step 5: Opening section...');
             await section.onOpen();
             
+            console.log(`=== Successfully opened settings for: ${sectionType} ===`);
             debugLog(`Opened settings for section: ${sectionType}`);
             
         } catch (error) {
@@ -95,33 +106,47 @@ class SectionManager {
      */
     async loadSectionSettingsUI(sectionType) {
         try {
+            console.log(`Loading settings UI for ${sectionType}`);
             const response = await fetch(`settings/${sectionType}-settings.php`);
+            console.log(`Response status: ${response.status}`);
+            
             if (!response.ok) {
-                throw new Error(`Failed to load settings UI for ${sectionType}`);
+                throw new Error(`Failed to load settings UI for ${sectionType}: ${response.status}`);
             }
             
             const html = await response.text();
-            document.getElementById('settingsContent').innerHTML = html;
+            console.log(`HTML loaded, length: ${html.length}`);
+            
+            const settingsContainer = document.getElementById('settingsContent');
+            if (!settingsContainer) {
+                throw new Error('Settings content container not found');
+            }
+            
+            settingsContainer.innerHTML = html;
+            console.log('HTML content set');
             
             // Execute any scripts in the loaded content
-            this.executeScriptsInContent(document.getElementById('settingsContent'));
+            this.executeScriptsInContent(settingsContainer);
             
             debugLog(`Loaded settings UI for: ${sectionType}`);
             
         } catch (error) {
             console.error(`Error loading settings UI for ${sectionType}:`, error);
             // Fallback to basic settings
-            document.getElementById('settingsContent').innerHTML = `
-                <div class="p-6">
-                    <div class="flex items-center gap-3 mb-6">
-                        <button id="backButton" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <i class="ri-arrow-right-line"></i>
-                        </button>
-                        <h3>הגדרות ${sectionType}</h3>
+            const settingsContainer = document.getElementById('settingsContent');
+            if (settingsContainer) {
+                settingsContainer.innerHTML = `
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-6">
+                            <button id="backButton" class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <i class="ri-arrow-right-line"></i>
+                            </button>
+                            <h3>הגדרות ${sectionType}</h3>
+                        </div>
+                        <p class="text-gray-500">שגיאה בטעינת הגדרות ${sectionType}: ${error.message}</p>
                     </div>
-                    <p class="text-gray-500">הגדרות ${sectionType} לא נמצאו</p>
-                </div>
-            `;
+                `;
+            }
         }
     }
     
@@ -134,6 +159,8 @@ class SectionManager {
         const scripts = container.querySelectorAll('script');
         scripts.forEach(script => {
             try {
+                if (!script.parentNode) return; // Skip if no parent
+                
                 // Create new script element to ensure execution
                 const newScript = document.createElement('script');
                 
@@ -141,16 +168,33 @@ class SectionManager {
                     // External script - load it
                     newScript.src = script.src;
                 } else {
-                    // Inline script - copy content
-                    newScript.textContent = script.textContent;
+                    // Inline script - copy content and validate
+                    const scriptContent = script.textContent || script.innerHTML;
+                    if (scriptContent && scriptContent.trim()) {
+                        // Basic validation - check for obvious syntax issues
+                        if (scriptContent.includes('<') && !scriptContent.includes('<!--')) {
+                            console.warn('Skipping script with HTML content:', scriptContent.substring(0, 100));
+                            return;
+                        }
+                        newScript.textContent = scriptContent;
+                    }
                 }
                 
-                // Replace old script with new one
-                script.parentNode.replaceChild(newScript, script);
-                
-                debugLog('Executed script in dynamically loaded content');
+                // Only replace if we have valid content
+                if (newScript.src || newScript.textContent) {
+                    script.parentNode.replaceChild(newScript, script);
+                    debugLog('Executed script in dynamically loaded content');
+                }
             } catch (error) {
                 console.error('Error executing script:', error);
+                // Remove the problematic script instead of crashing
+                try {
+                    if (script.parentNode) {
+                        script.parentNode.removeChild(script);
+                    }
+                } catch (removeError) {
+                    console.error('Error removing problematic script:', removeError);
+                }
             }
         });
     }
@@ -165,6 +209,9 @@ class SectionManager {
             window.currentSection = null; // Clear global reference
             debugLog('Closed current section settings');
         }
+        
+        // חזרה לפאנל הסקשנים
+        this.builder.slideToSections();
     }
     
     /**

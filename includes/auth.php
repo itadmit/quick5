@@ -250,6 +250,22 @@ function getCurrentUser() {
 }
 
 /**
+ * דרישת הרשאה - הפניה לדף התחברות אם המשתמש לא מחובר
+ */
+function requireAuth() {
+    if (!isLoggedIn()) {
+        // הפניה לדף התחברות
+        $currentUrl = $_SERVER['REQUEST_URI'] ?? '';
+        $loginUrl = '/admin/login.php';
+        if (!empty($currentUrl)) {
+            $loginUrl .= '?redirect=' . urlencode($currentUrl);
+        }
+        header('Location: ' . $loginUrl);
+        exit;
+    }
+}
+
+/**
  * בדיקת הרשאות משתמש
  */
 function hasRole($roles = []) {

@@ -48,12 +48,57 @@ function getButtonInlineStyles($style, $heroData) {
     }
 }
 
-// Load hero data
+// Load hero data from database (same as API)
 function getHeroData() {
-    $heroFile = __DIR__ . '/../data/hero.json';
-    
-    // Default data with all new settings
-    $defaultData = [
+    try {
+        // Include database and auth
+        require_once __DIR__ . '/../../includes/config.php';
+        require_once __DIR__ . '/../../includes/auth.php';
+        
+        // Get current store ID
+        $storeId = 1; // For now, use default store
+        $pageType = 'home';
+        
+        $pdo = getDB();
+        
+        // Try to load from database first
+        $stmt = $pdo->prepare("
+            SELECT page_data, updated_at 
+            FROM builder_pages 
+            WHERE store_id = ? AND page_type = ?
+        ");
+        $stmt->execute([$storeId, $pageType]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result) {
+            // Found in database
+            $pageData = json_decode($result['page_data'], true);
+            if ($pageData && isset($pageData['sections'])) {
+                $heroSection = array_filter($pageData['sections'], function($section) {
+                    return $section['type'] === 'hero';
+                });
+                
+                if (!empty($heroSection)) {
+                    $heroSection = array_shift($heroSection);
+                    if (isset($heroSection['data'])) {
+                        return array_merge(getDefaultHeroData(), $heroSection['data']);
+                    }
+                }
+            }
+        }
+        
+        // No data in database, return defaults
+        return getDefaultHeroData();
+        
+    } catch (Exception $e) {
+        error_log("Error loading hero data: " . $e->getMessage());
+        return getDefaultHeroData();
+    }
+}
+
+// Default hero data
+function getDefaultHeroData() {
+    return [
         // Content
         'title' => 'ברוכים הבאים לחנות שלנו',
         'subtitle' => 'גלה את המוצרים הטובים ביותר במחירים הכי טובים',
@@ -208,15 +253,6 @@ function getHeroData() {
         'customClass' => '',
         'customId' => ''
     ];
-    
-    if (file_exists($heroFile)) {
-        $savedData = json_decode(file_get_contents($heroFile), true);
-        if ($savedData) {
-            return array_merge($defaultData, $savedData);
-        }
-    }
-    
-    return $defaultData;
 }
 
 // Helper functions for Hero specific features

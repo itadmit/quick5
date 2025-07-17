@@ -104,6 +104,7 @@ window.HeroSection = class HeroSection {
         try {
             const response = await fetch('api/pages.php', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -120,12 +121,14 @@ window.HeroSection = class HeroSection {
                 const heroSection = result.data.sections.find(section => section.type === 'hero');
                 if (heroSection && heroSection.data) {
                     this.data = { ...this.getDefaultData(), ...heroSection.data };
-                    console.log('Hero data loaded:', this.data);
+                    console.log('Hero data loaded from database:', this.data);
                 } else {
-                    console.log('No hero section found, using defaults');
+                    console.log('No hero section found in database, using minimal defaults');
+                    // Keep default data for new section
                 }
             } else {
-                console.log('No page data found, using defaults');
+                console.log('No page data found in database, using minimal defaults');
+                // Keep default data for new section
             }
         } catch (error) {
             console.error('Failed to load hero data:', error);
@@ -139,6 +142,7 @@ window.HeroSection = class HeroSection {
         try {
             const response = await fetch('api/pages.php', {
                 method: 'POST',
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },

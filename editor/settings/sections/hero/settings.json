@@ -1,0 +1,267 @@
+{
+  "name": "Hero Section",
+  "type": "hero",
+  "category": "layout",
+  "description": "סקשן הירו עם כותרת, תיאור וכפתורים",
+  "icon": "ri-image-line",
+  "responsive": true,
+  "settings": {
+    "content": {
+      "label": "תוכן",
+      "fields": {
+        "title": {
+          "type": "text",
+          "label": "כותרת",
+          "default": "ברוכים הבאים לחנות שלנו",
+          "responsive": false
+        },
+        "subtitle": {
+          "type": "textarea",
+          "label": "תיאור",
+          "default": "גלו את המוצרים הטובים ביותר במחירים הטובים ביותר",
+          "responsive": false
+        },
+        "buttons": {
+          "type": "repeater",
+          "label": "כפתורים",
+          "max": 3,
+          "fields": {
+            "text": {
+              "type": "text",
+              "label": "טקסט כפתור"
+            },
+            "url": {
+              "type": "url",
+              "label": "קישור"
+            },
+            "style": {
+              "type": "select",
+              "label": "סגנון",
+              "options": {
+                "primary": "ראשי",
+                "secondary": "משני", 
+                "outline": "מתאר"
+              },
+              "default": "primary"
+            }
+          }
+        }
+      }
+    },
+    "design": {
+      "label": "עיצוב",
+      "responsive": true,
+      "fields": {
+        "height": {
+          "type": "select",
+          "label": "גובה סקשן",
+          "responsive": true,
+          "options": {
+            "auto": "אוטומטי",
+            "50vh": "חצי מסך",
+            "75vh": "3/4 מסך",
+            "100vh": "מסך מלא",
+            "custom": "מותאם אישית"
+          },
+          "default": {
+            "desktop": "75vh",
+            "mobile": "50vh"
+          }
+        },
+        "customHeight": {
+          "type": "number",
+          "label": "גובה מותאם (px)",
+          "responsive": true,
+          "min": 200,
+          "max": 2000,
+          "condition": "height == 'custom'",
+          "default": {
+            "desktop": 600,
+            "mobile": 400
+          }
+        },
+        "background": {
+          "type": "background",
+          "label": "רקע",
+          "responsive": true,
+          "options": ["color", "gradient", "image", "video"],
+          "default": {
+            "desktop": {
+              "type": "color",
+              "color": "#3B82F6"
+            },
+            "mobile": {
+              "type": "color", 
+              "color": "#3B82F6"
+            }
+          }
+        },
+        "overlay": {
+          "type": "color_opacity",
+          "label": "שכבת כיסוי",
+          "responsive": false,
+          "default": {
+            "color": "#000000",
+            "opacity": 0.3
+          }
+        },
+        "contentAlignment": {
+          "type": "select",
+          "label": "יישור תוכן",
+          "responsive": true,
+          "options": {
+            "right": "ימין",
+            "center": "מרכז",
+            "left": "שמאל"
+          },
+          "default": {
+            "desktop": "center",
+            "mobile": "center"
+          }
+        },
+        "verticalAlignment": {
+          "type": "select",
+          "label": "יישור אנכי",
+          "responsive": true,
+          "options": {
+            "top": "למעלה",
+            "center": "מרכז", 
+            "bottom": "למטה"
+          },
+          "default": {
+            "desktop": "center",
+            "mobile": "center"
+          }
+        }
+      }
+    },
+    "typography": {
+      "label": "טיפוגרפיה",
+      "responsive": true,
+      "fields": {
+        "title": {
+          "type": "typography",
+          "label": "כותרת",
+          "responsive": true,
+          "default": {
+            "desktop": {
+              "fontSize": 48,
+              "fontFamily": "Noto Sans Hebrew",
+              "fontWeight": "700",
+              "lineHeight": 1.2,
+              "color": "#FFFFFF"
+            },
+            "mobile": {
+              "fontSize": 32,
+              "fontFamily": "Noto Sans Hebrew", 
+              "fontWeight": "700",
+              "lineHeight": 1.2,
+              "color": "#FFFFFF"
+            }
+          }
+        },
+        "subtitle": {
+          "type": "typography",
+          "label": "תיאור",
+          "responsive": true,
+          "default": {
+            "desktop": {
+              "fontSize": 18,
+              "fontFamily": "Noto Sans Hebrew",
+              "fontWeight": "400",
+              "lineHeight": 1.5,
+              "color": "#E5E7EB"
+            },
+            "mobile": {
+              "fontSize": 16,
+              "fontFamily": "Noto Sans Hebrew",
+              "fontWeight": "400", 
+              "lineHeight": 1.5,
+              "color": "#E5E7EB"
+            }
+          }
+        }
+      }
+    },
+    "spacing": {
+      "label": "מרווחים",
+      "responsive": true,
+      "fields": {
+        "padding": {
+          "type": "spacing",
+          "label": "פדינג",
+          "responsive": true,
+          "default": {
+            "desktop": {
+              "top": 80,
+              "bottom": 80,
+              "left": 20,
+              "right": 20
+            },
+            "mobile": {
+              "top": 40,
+              "bottom": 40,
+              "left": 16,
+              "right": 16
+            }
+          }
+        },
+        "margin": {
+          "type": "spacing",
+          "label": "מרגין",
+          "responsive": true,
+          "default": {
+            "desktop": {
+              "top": 0,
+              "bottom": 0,
+              "left": 0,
+              "right": 0
+            },
+            "mobile": {
+              "top": 0,
+              "bottom": 0,
+              "left": 0,
+              "right": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "presets": [
+    {
+      "name": "ברירת מחדל",
+      "settings": {}
+    },
+    {
+      "name": "וידאו רקע",
+      "settings": {
+        "design": {
+          "background": {
+            "desktop": {
+              "type": "video",
+              "video": "",
+              "muted": true,
+              "loop": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "תמונת רקע",
+      "settings": {
+        "design": {
+          "background": {
+            "desktop": {
+              "type": "image",
+              "image": "",
+              "size": "cover",
+              "position": "center"
+            }
+          }
+        }
+      }
+    }
+  ]
+} 

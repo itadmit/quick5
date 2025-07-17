@@ -4,10 +4,14 @@
  * מחליף את save-hero.php ו-load-hero.php
  */
 
+// Start session first!
+session_start();
+
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Origin: ' . ($_SERVER['HTTP_ORIGIN'] ?? 'http://yogev.localhost:8888'));
 header('Access-Control-Allow-Methods: POST, GET, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -66,7 +70,7 @@ function handleLoadPage($storeId) {
  */
 function handleLoadPageLogic($storeId, $pageType) {
     try {
-        global $pdo;
+        $pdo = getDB();
         
         // Try to load from database first
         $stmt = $pdo->prepare("
@@ -87,12 +91,15 @@ function handleLoadPageLogic($storeId, $pageType) {
                 'last_updated' => $result['updated_at']
             ]);
         } else {
-            // Load demo data
-            $demoData = loadDemoData($pageType);
+            // No data in database, return minimal structure
+            $emptyData = [
+                'page_type' => $pageType,
+                'sections' => []
+            ];
             echo json_encode([
                 'success' => true,
-                'source' => 'demo',
-                'data' => $demoData,
+                'source' => 'empty',
+                'data' => $emptyData,
                 'last_updated' => null
             ]);
         }
@@ -131,7 +138,7 @@ function handleSavePage($storeId) {
     validatePageData($pageData);
     
     try {
-        global $pdo;
+        $pdo = getDB();
         
         // Check if page exists
         $stmt = $pdo->prepare("

@@ -159,7 +159,7 @@ window.ButtonsRepeater = class ButtonsRepeater {
     }
     
     createButtonHtml(button, index) {
-        const iconOptions = this.options.showIcons ? this.getIconOptions(button.icon) : '';
+        const iconOptions = this.options.showIcons ? this.getIconOptions(button.icon, index) : '';
         const hoverSettings = this.options.showHover ? this.getHoverSettings(button, index) : '';
         
         return `
@@ -246,7 +246,7 @@ window.ButtonsRepeater = class ButtonsRepeater {
         `;
     }
     
-    getIconOptions(selectedIcon) {
+    getIconOptions(selectedIcon, index) {
         return `
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">אייקון</label>

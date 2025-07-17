@@ -11,22 +11,22 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">פדינג (px)</label>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>PaddingTop" name="paddingTop" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>PaddingTop" name="paddingTop" 
                            value="<?php echo $defaultData['paddingTop'] ?? '80'; ?>" placeholder="למעלה" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>PaddingBottom" name="paddingBottom" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>PaddingBottom" name="paddingBottom" 
                            value="<?php echo $defaultData['paddingBottom'] ?? '80'; ?>" placeholder="למטה" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>PaddingRight" name="paddingRight" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>PaddingRight" name="paddingRight" 
                            value="<?php echo $defaultData['paddingRight'] ?? '20'; ?>" placeholder="ימין" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>PaddingLeft" name="paddingLeft" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>PaddingLeft" name="paddingLeft" 
                            value="<?php echo $defaultData['paddingLeft'] ?? '20'; ?>" placeholder="שמאל" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -38,22 +38,22 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">מרגין (px)</label>
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>MarginTop" name="marginTop" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>MarginTop" name="marginTop" 
                            value="<?php echo $defaultData['marginTop'] ?? '0'; ?>" placeholder="למעלה" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>MarginBottom" name="marginBottom" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>MarginBottom" name="marginBottom" 
                            value="<?php echo $defaultData['marginBottom'] ?? '0'; ?>" placeholder="למטה" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>MarginRight" name="marginRight" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>MarginRight" name="marginRight" 
                            value="<?php echo $defaultData['marginRight'] ?? '0'; ?>" placeholder="ימין" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div>
-                    <input type="number" id="<?php echo $sectionType; ?>MarginLeft" name="marginLeft" 
+                    <input type="number" id="<?php echo $prefix ?? 'hero'; ?>MarginLeft" name="marginLeft" 
                            value="<?php echo $defaultData['marginLeft'] ?? '0'; ?>" placeholder="שמאל" 
                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
