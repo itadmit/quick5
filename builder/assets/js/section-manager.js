@@ -28,7 +28,7 @@ class SectionManager {
             if (!window[sectionClassName]) {
                 // טעינת הקובץ JS של הסקשן
                 const script = document.createElement('script');
-                script.src = `assets/js/sections/${sectionType}.js?t=${Date.now()}`;
+                script.src = `blocks/js/${sectionType}.js?t=${Date.now()}`;
                 
                 // המתנה לטעינה
                 await new Promise((resolve, reject) => {

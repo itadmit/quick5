@@ -1,148 +1,155 @@
-<!-- Colors Section -->
-<div class="bg-gray-50 rounded-lg p-4">
-    <div class="flex items-center gap-2 mb-3">
-        <i class="ri-palette-fill text-orange-600"></i>
-        <h4 class="font-medium text-gray-900">צבעים</h4>
+<?php
+/**
+ * Colors Component - רכיב הגדרות צבעים
+ */
+
+/**
+ * רינדור בוחר צבע
+ */
+function renderColorPicker($id, $label, $defaultValue = '#000000') {
+    ?>
+    <div class="color-picker">
+        <label for="<?php echo esc_attr($id); ?>" class="block text-xs font-medium text-gray-600 mb-2">
+            <?php echo esc_html($label); ?>
+        </label>
+        <div class="flex items-center gap-3">
+            <input type="color" 
+                   id="<?php echo esc_attr($id); ?>" 
+                   name="<?php echo esc_attr(strtolower(str_replace('hero', '', $id))); ?>Color"
+                   value="<?php echo esc_attr($defaultValue); ?>"
+                   class="w-12 h-8 border border-gray-300 rounded cursor-pointer">
+            <input type="text" 
+                   id="<?php echo esc_attr($id); ?>_text" 
+                   value="<?php echo esc_attr($defaultValue); ?>"
+                   class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                   placeholder="#000000">
+        </div>
     </div>
     
-    <div class="grid grid-cols-2 gap-4">
-        <!-- Title Color -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">צבע כותרת</label>
-            <input type="color" id="<?php echo $sectionType; ?>TitleColor" name="titleColor" 
-                   value="<?php echo $defaultData['titleColor'] ?? '#FFFFFF'; ?>" 
-                   class="w-full h-10 border border-gray-300 rounded-md">
-        </div>
+    <script>
+    // Sync color picker with text input
+    (function() {
+        const colorPicker = document.getElementById('<?php echo esc_attr($id); ?>');
+        const textInput = document.getElementById('<?php echo esc_attr($id); ?>_text');
         
-        <!-- Subtitle Color -->
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">צבע תת כותרת</label>
-            <input type="color" id="<?php echo $sectionType; ?>SubtitleColor" name="subtitleColor" 
-                   value="<?php echo $defaultData['subtitleColor'] ?? '#E5E7EB'; ?>" 
-                   class="w-full h-10 border border-gray-300 rounded-md">
-        </div>
+        if (colorPicker && textInput) {
+            colorPicker.addEventListener('input', function() {
+                textInput.value = this.value;
+                textInput.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            
+            textInput.addEventListener('input', function() {
+                if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+                    colorPicker.value = this.value;
+                }
+            });
+        }
+    })();
+    </script>
+    <?php
+}
+
+/**
+ * רינדור בוחר צבע עם אפשרות שקיפות
+ */
+function renderColorPickerWithOpacity($id, $label, $defaultValue = '#000000', $defaultOpacity = 1) {
+    ?>
+    <div class="color-picker-with-opacity">
+        <label class="block text-xs font-medium text-gray-600 mb-2">
+            <?php echo esc_html($label); ?>
+        </label>
         
-        <!-- Button Colors with State Switcher -->
-        <div class="col-span-2">
-            <div class="bg-white rounded-md p-3">
-                <div class="flex items-center justify-between mb-3">
-                    <h5 class="text-sm font-medium text-gray-900">צבעי כפתורים</h5>
-                    
-                    <!-- Button State Switcher -->
-                    <div class="flex items-center gap-1 bg-gray-100 rounded-md p-1">
-                        <button type="button" class="button-state-btn px-3 py-1 text-xs rounded active" data-state="normal">רגיל</button>
-                        <button type="button" class="button-state-btn px-3 py-1 text-xs rounded" data-state="hover">Hover</button>
-                        </div>
-</div>
-
-<style>
-.button-state-btn.active {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.button-state-btn:not(.active) {
-    color: #6b7280;
-}
-
-.button-state-btn:not(.active):hover {
-    background-color: #f3f4f6;
-}
-</style>
-
-                <!-- Normal State -->
-                <div id="buttonNormalState" class="button-state-panel">
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">רקע</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonBgColor" name="buttonBgColor" 
-                                   value="<?php echo $defaultData['buttonBgColor'] ?? '#F59E0B'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">מסגרת</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonBorderColor" name="buttonBorderColor" 
-                                   value="<?php echo $defaultData['buttonBorderColor'] ?? '#F59E0B'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">טקסט</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonTextColor" name="buttonTextColor" 
-                                   value="<?php echo $defaultData['buttonTextColor'] ?? '#FFFFFF'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                    </div>
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Color -->
+            <div>
+                <div class="flex items-center gap-2">
+                    <input type="color" 
+                           id="<?php echo esc_attr($id); ?>" 
+                           name="<?php echo esc_attr(strtolower(str_replace('hero', '', $id))); ?>Color"
+                           value="<?php echo esc_attr($defaultValue); ?>"
+                           class="w-8 h-8 border border-gray-300 rounded cursor-pointer">
+                    <input type="text" 
+                           id="<?php echo esc_attr($id); ?>_text" 
+                           value="<?php echo esc_attr($defaultValue); ?>"
+                           class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                           placeholder="#000000">
                 </div>
-                
-                <!-- Hover State -->
-                <div id="buttonHoverState" class="button-state-panel" style="display: none;">
-                    <div class="grid grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">רקע</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonBgColorHover" name="buttonBgColorHover" 
-                                   value="<?php echo $defaultData['buttonBgColorHover'] ?? '#E5A712'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">מסגרת</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonBorderColorHover" name="buttonBorderColorHover" 
-                                   value="<?php echo $defaultData['buttonBorderColorHover'] ?? '#E5A712'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-gray-600 mb-1">טקסט</label>
-                            <input type="color" id="<?php echo $sectionType; ?>ButtonTextColorHover" name="buttonTextColorHover" 
-                                   value="<?php echo $defaultData['buttonTextColorHover'] ?? '#FFFFFF'; ?>" 
-                                   class="w-full h-8 border border-gray-300 rounded">
-                        </div>
-                    </div>
+            </div>
+            
+            <!-- Opacity -->
+            <div>
+                <label class="block text-xs text-gray-500 mb-1">שקיפות</label>
+                <input type="range" 
+                       id="<?php echo esc_attr($id); ?>Opacity" 
+                       name="<?php echo esc_attr(strtolower(str_replace('hero', '', $id))); ?>Opacity"
+                       min="0" max="1" step="0.01" 
+                       value="<?php echo esc_attr($defaultOpacity); ?>"
+                       class="w-full">
+                <div class="flex justify-between text-xs text-gray-400">
+                    <span>0%</span>
+                    <span>100%</span>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <?php
+}
 
-<script>
-// Button state switcher functionality - execute immediately
-(function() {
-    function initButtonStateSwitcher() {
-        const stateButtons = document.querySelectorAll('.button-state-btn');
-        const normalPanel = document.getElementById('buttonNormalState');
-        const hoverPanel = document.getElementById('buttonHoverState');
-        
-        console.log('Color state buttons found:', stateButtons.length);
-        console.log('Normal panel:', normalPanel);
-        console.log('Hover panel:', hoverPanel);
-        
-        if (stateButtons.length > 0 && normalPanel && hoverPanel) {
-            stateButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const state = this.dataset.state;
-                    console.log('Button state clicked:', state);
-                    
-                    // Update active button
-                    stateButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-                    
-                    // Show/hide panels
-                    if (state === 'normal') {
-                        normalPanel.style.display = 'block';
-                        hoverPanel.style.display = 'none';
-                    } else if (state === 'hover') {
-                        normalPanel.style.display = 'none';
-                        hoverPanel.style.display = 'block';
-                    }
-                });
-            });
-            console.log('Button state switcher initialized successfully');
-        } else {
-            console.error('Button state elements not found - retrying in 100ms');
-            // Retry after a short delay if elements not found
-            setTimeout(initButtonStateSwitcher, 100);
-        }
-    }
+/**
+ * רינדור פלטת צבעים מוכנה
+ */
+function renderColorPalette($id, $label) {
+    $colors = [
+        '#000000' => 'שחור',
+        '#FFFFFF' => 'לבן', 
+        '#F3F4F6' => 'אפור בהיר',
+        '#6B7280' => 'אפור',
+        '#374151' => 'אפור כהה',
+        '#EF4444' => 'אדום',
+        '#F59E0B' => 'כתום',
+        '#10B981' => 'ירוק',
+        '#3B82F6' => 'כחול',
+        '#8B5CF6' => 'סגול',
+        '#EC4899' => 'ורוד'
+    ];
+    ?>
     
-    // Try to initialize immediately
-    initButtonStateSwitcher();
-})();
-</script> 
+    <div class="color-palette">
+        <label class="block text-xs font-medium text-gray-600 mb-2">
+            <?php echo esc_html($label); ?>
+        </label>
+        
+        <div class="grid grid-cols-6 gap-2 mb-3">
+            <?php foreach ($colors as $color => $name): ?>
+                <button type="button" 
+                        class="color-option w-8 h-8 rounded border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                        style="background-color: <?php echo esc_attr($color); ?>"
+                        data-color="<?php echo esc_attr($color); ?>"
+                        title="<?php echo esc_attr($name); ?>">
+                </button>
+            <?php endforeach; ?>
+        </div>
+        
+        <!-- Custom color input -->
+        <input type="color" 
+               id="<?php echo esc_attr($id); ?>" 
+               name="<?php echo esc_attr(strtolower(str_replace('hero', '', $id))); ?>Color"
+               class="w-full h-8 border border-gray-300 rounded cursor-pointer">
+    </div>
+    
+    <script>
+    // Handle color palette clicks
+    document.querySelectorAll('.color-option').forEach(button => {
+        button.addEventListener('click', function() {
+            const color = this.dataset.color;
+            const input = document.getElementById('<?php echo esc_attr($id); ?>');
+            if (input) {
+                input.value = color;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
+    });
+    </script>
+    <?php
+}
+?> 

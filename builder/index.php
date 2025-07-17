@@ -186,10 +186,16 @@ if (!$store) {
     </div>
 
     <!-- Load modular JavaScript files -->
+    <!-- Core modules (load first) -->
+    <script src="js/typography.js"></script>
+    <script src="js/colors.js"></script>
+    <script src="js/buttons-repeater.js"></script>
+    
+    <!-- Builder components -->
     <script src="assets/js/section-manager.js"></script>
-<script src="assets/js/section-actions.js"></script>
-<script src="assets/js/builder.js"></script>
-<script src="assets/js/sections/button-features.js"></script>
+    <script src="assets/js/section-actions.js"></script>
+    <script src="assets/js/builder.js"></script>
+    <script src="assets/js/sections/button-features.js"></script>
 
     <script>
         // Store data for JavaScript
