@@ -1,0 +1,283 @@
+/**
+ * CSS לבילדר - עיצוב בסגנון Figma מודרני
+ */
+
+ body { 
+    font-family: 'Noto Sans Hebrew', sans-serif; 
+    direction: rtl;
+}
+
+/* Figma Style Components */
+.figma-sidebar {
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    border-left: 1px solid #e2e8f0;
+}
+
+.figma-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.figma-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.figma-button {
+    background: #3b82f6;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    padding: 8px 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.figma-button:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Add Section Menu */
+.add-section-menu {
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+}
+
+.add-section-trigger:hover .add-section-menu {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Section Items */
+.section-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.section-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.section-item.active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.section-item.hidden {
+    opacity: 0.5;
+    background: #f9fafb;
+}
+
+/* Toolbar */
+.toolbar {
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* Section Actions */
+.section-action-btn {
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.section-action-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+/* Settings Panel */
+#settingsPanel {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    padding-bottom: 80px !important; /* הוספת מרווח תחתון גדול */
+    scroll-padding-bottom: 40px; /* ווידוא שהscroll מגיע עד הסוף */
+}
+
+#settingsContent {
+    padding-bottom: 60px; /* מרווח נוסף לתוכן - הגדלתי ל-60px */
+}
+
+/* ווידוא שהאלמנט האחרון בהגדרות נראה לחלוטין */
+.settings-group:last-child {
+    margin-bottom: 40px !important;
+}
+
+/* שיפור הscroll */
+#settingsPanel::-webkit-scrollbar {
+    width: 6px;
+}
+
+#settingsPanel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+#settingsPanel::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+#settingsPanel::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+.settings-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 12px;
+    transition: border-color 0.2s ease;
+}
+
+.settings-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* גודל פונט קטן יותר לאינפוטים */
+.text-xs-plus {
+    font-size: 11px;
+}
+
+.input-small {
+    font-size: 11px;
+}
+
+.settings-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #374151;
+}
+
+/* Animation */
+@keyframes slideIn {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+/* Sidebar Improvements */
+.figma-sidebar {
+    padding-bottom: 20px; /* מרווח תחתון לsidebar */
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .figma-sidebar {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        right: -100%;
+        transition: right 0.3s ease;
+        z-index: 50;
+        padding-bottom: 40px; /* מרווח תחתון גדול יותר במובייל */
+    }
+    
+    .figma-sidebar.open {
+        right: 0;
+    }
+}
+
+/* Success/Error States */
+.success-state {
+    background: #dcfce7;
+    border-color: #16a34a;
+    color: #15803d;
+}
+
+.error-state {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #3b82f6;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Icon Picker Modal */
+#iconPickerModal {
+    z-index: 9999;
+}
+
+#iconPickerModal .icon-option {
+    transition: all 0.2s ease;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#iconPickerModal .icon-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+#iconPickerModal .icon-option.selected {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+}
+
+.icon-picker-btn {
+    cursor: pointer;
+}
+
+.icon-picker-btn:hover .ri-star-line {
+    color: #f59e0b !important;
+}

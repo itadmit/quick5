@@ -1,68 +1,47 @@
 <?php
 /**
- * עורך הבילדר - editor/index.php
- * מציג iframe עם store-front/home.php ופאנל הגדרות לעריכה
+ * בילדר מודולרי WYSIWYG - עמוד ראשי
  */
 
+require_once '../includes/auth.php';
 require_once '../includes/config.php';
 require_once '../config/database.php';
-require_once '../includes/auth.php';
 require_once '../includes/StoreResolver.php';
-
-// חיבור למסד נתונים
-$pdo = Database::getInstance()->getConnection();
 
 // בדיקת הרשאות
 requireAuth();
+
+// חיבור למסד נתונים
+$pdo = Database::getInstance()->getConnection();
 
 // אתחול מנהל החנות
 $storeResolver = new StoreResolver();
 $store = $storeResolver->getCurrentStore();
 
 if (!$store) {
-    http_response_code(404);
-    include '../404.php';
+    header('Location: ../admin/');
     exit;
 }
 
-// טעינת נתוני הדף הנוכחיים
+// טעינת נתוני הדף
 try {
-    $stmt = $pdo->prepare("SELECT id, page_data, is_published FROM builder_pages WHERE store_id = ? AND page_type = 'home' ORDER BY updated_at DESC LIMIT 1");
+    $stmt = $pdo->prepare("SELECT page_data, is_published FROM builder_pages WHERE store_id = ? AND page_type = 'home' ORDER BY updated_at DESC LIMIT 1");
     $stmt->execute([$store['id']]);
-    $currentPage = $stmt->fetch(PDO::FETCH_ASSOC);
+    $pageData = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if (!$currentPage) {
-        // יצירת דף חדש אם לא קיים
-        $defaultData = json_encode([]);
-        
-        $stmt = $pdo->prepare("
-            INSERT INTO builder_pages (store_id, page_type, page_data, is_published, created_at, updated_at) 
-            VALUES (?, 'home', ?, 0, NOW(), NOW())
-        ");
-        $stmt->execute([$store['id'], $defaultData]);
-        $newPageId = $pdo->lastInsertId();
-        
-        $currentPage = [
-            'id' => $newPageId,
-            'page_data' => $defaultData,
-            'is_published' => 0
-        ];
-    }
-    
-    // טעינת סקשנים קיימים או דף ריק
-    $sections = json_decode($currentPage['page_data'], true) ?: [];
+    $sections = $pageData ? json_decode($pageData['page_data'], true) : [];
+    $isPublished = $pageData ? (bool)$pageData['is_published'] : false;
 } catch (Exception $e) {
-    error_log("Error loading page data: " . $e->getMessage());
     $sections = [];
+    $isPublished = false;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>עורך הבילדר - <?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></title>
+    <title>עורך האתר - <?php echo htmlspecialchars($store['name']); ?></title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -70,220 +49,262 @@ try {
     <!-- Remix Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
     
-    <!-- Noto Sans Hebrew Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
+    <!-- Custom CSS for notifications -->
     <style>
-        body {
-            font-family: 'Noto Sans Hebrew', sans-serif;
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            pointer-events: none;
         }
         
-        .editor-layout {
-            height: 100vh;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            grid-template-rows: 60px 1fr;
-            grid-template-areas: 
-                "toolbar toolbar"
-                "sidebar preview";
-        }
-        
-        .editor-toolbar {
-            grid-area: toolbar;
-            background: #1f2937;
+        .notification-bubble {
+            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 1rem;
+            items: center;
+            gap: 12px;
+            font-family: 'Noto Sans Hebrew', sans-serif;
+            font-weight: 500;
+            max-width: 400px;
+            pointer-events: auto;
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
         
-        .editor-sidebar {
-            grid-area: sidebar;
-            background: #f9fafb;
-            border-left: 1px solid #e5e7eb;
-            overflow-y: auto;
+        .notification-bubble.show {
+            transform: translateY(0);
+            opacity: 1;
         }
         
-        .editor-preview {
-            grid-area: preview;
-            background: #e5e7eb;
-            position: relative;
+        .notification-bubble.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
         }
         
-        .preview-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
+        .notification-bubble.warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4);
         }
         
-        .preview-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
+        .notification-bubble.loading {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* Accordion Styles */
+        .accordion-header:hover {
+            background-color: #f9fafb;
+            border-radius: 0.5rem; /* תואם ל-rounded-lg של Tailwind */
+        }
+        
+        /* פינות מעוגלות רק עבור הheader הראשון (כשהאקורדיון סגור) */
+        .accordion-header:not(.open):hover {
+            border-radius: 0.5rem;
+        }
+        
+        /* כשהאקורדיון פתוח, רק הפינות העליונות מעוגלות */
+        .accordion-header.open:hover {
+            border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        .accordion-content {
+            transition: max-height 0.3s ease, opacity 0.3s ease;
             overflow: hidden;
         }
-        
-        /* כלים צפים על ה-iframe */
-        .floating-tools {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 8px;
-        }
-        
-        .device-toggle {
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .device-toggle:hover {
-            background: rgba(0, 0, 0, 0.9);
-        }
-        
-        .device-toggle.active {
-            background: #3B82F6;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
 
-    <div class="editor-layout">
-        <!-- סרגל כלים עליון -->
-        <div class="editor-toolbar">
-            <div class="flex items-center gap-4">
-                <h1 class="text-lg font-semibold">עורך הבילדר</h1>
-                <span class="text-sm text-gray-300"><?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></span>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <button id="saveBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-                    <i class="ri-save-line ml-1"></i>
-                    שמור
-                </button>
-                
-                <button id="publishBtn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
-                    <i class="ri-global-line ml-1"></i>
-                    פרסם
-                </button>
-                
-                <button id="previewBtn" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors">
-                    <i class="ri-eye-line ml-1"></i>
-                    תצוגה מקדימה
-                </button>
-            </div>
+        .accordion-header i[class*="arrow"] {
+            transition: transform 0.2s ease;
+        }
+        
+        .notification-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        
+                 .notification-text {
+             flex: 1;
+             text-align: center;
+         }
+         
+         /* אנימציות לתפריט הוספת סקשן */
+         .add-section-menu {
+             opacity: 0;
+             transform: translateY(-10px);
+             transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+             pointer-events: none;
+         }
+         
+         .add-section-menu:not(.hidden) {
+             opacity: 1;
+             transform: translateY(0);
+             pointer-events: auto;
+         }
+         
+         .add-section-menu.hidden {
+             opacity: 0;
+             transform: translateY(-10px);
+             pointer-events: none;
+         }
+     </style>
+    
+    <!-- Noto Sans Hebrew -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS מותאם -->
+    <link href="css/builder.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden" dir="rtl">
+    
+    <!-- Toolbar עליון -->
+    <div class="toolbar">
+        <div class="flex items-center gap-4">
+            <h1 class="text-lg font-semibold text-gray-900">עורך האתר</h1>
+            <div class="h-4 w-px bg-gray-300"></div>
+            <span class="text-sm text-gray-600"><?php echo htmlspecialchars($store['name']); ?></span>
         </div>
         
-        <!-- סייד-בר הגדרות -->
-        <div class="editor-sidebar">
-            <!-- טאבים -->
-            <div class="border-b border-gray-200">
-                <div class="flex">
-                    <button class="tab-btn flex-1 px-4 py-3 text-sm font-medium text-center border-b-2 border-blue-500 text-blue-600 bg-blue-50" data-tab="sections">
-                        <i class="ri-layout-grid-line ml-1"></i>
-                        סקשנים
-                    </button>
-                    <button class="tab-btn flex-1 px-4 py-3 text-sm font-medium text-center border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="settings">
-                        <i class="ri-settings-3-line ml-1"></i>
-                        הגדרות
-                    </button>
-                </div>
-            </div>
-            
-            <!-- תוכן הטאבים -->
-            <div class="tab-content">
-                <!-- טאב סקשנים -->
-                <div id="sectionsTab" class="tab-panel p-4">
-                    <div class="mb-4">
-                        <h3 class="text-sm font-semibold text-gray-900 mb-3">הוסף סקשן</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button class="add-section-btn p-3 text-xs border border-gray-300 rounded hover:bg-gray-50 transition-colors" data-section="hero">
-                                <i class="ri-image-line mb-1 block text-lg"></i>
-                                הירו
-                            </button>
-                            <button class="add-section-btn p-3 text-xs border border-gray-300 rounded hover:bg-gray-50 transition-colors" data-section="category-grid">
-                                <i class="ri-grid-line mb-1 block text-lg"></i>
-                                גריד קטגוריות
-                            </button>
-                            <button class="add-section-btn p-3 text-xs border border-gray-300 rounded hover:bg-gray-50 transition-colors" data-section="product-slider">
-                                <i class="ri-slideshow-line mb-1 block text-lg"></i>
-                                סלידר מוצרים
-                            </button>
-                            <button class="add-section-btn p-3 text-xs border border-gray-300 rounded hover:bg-gray-50 transition-colors" data-section="text-block">
-                                <i class="ri-file-text-line mb-1 block text-lg"></i>
-                                בלוק טקסט
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="border-t border-gray-200 pt-4">
-                        <h3 class="text-sm font-semibold text-gray-900 mb-3">סקשנים קיימים</h3>
-                        <div id="existingSections" class="space-y-2">
-                            <!-- הסקשנים יטענו כאן דינמית -->
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- טאב הגדרות -->
-                <div id="settingsTab" class="tab-panel p-4 hidden">
-                    <div id="sectionSettings">
-                        <div class="text-center text-gray-500 py-8">
-                            <i class="ri-settings-3-line text-2xl mb-2 block"></i>
-                            <p class="text-sm">בחר סקשן לעריכה</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- תצוגה מקדימה -->
-        <div class="editor-preview">
-            <div class="floating-tools">
-                <button class="device-toggle active" data-device="desktop">
-                    <i class="ri-computer-line ml-1"></i>
-                    דסקטופ
+        <div class="flex items-center gap-3">
+            <!-- מצב תצוגה -->
+            <div class="flex items-center bg-gray-100 rounded-lg p-1">
+                <button id="desktopView" class="device-btn figma-button bg-white text-gray-700 text-sm" data-device="desktop">
+                    <i class="ri-computer-line"></i>
+                    מחשב
                 </button>
-                <button class="device-toggle" data-device="tablet">
-                    <i class="ri-tablet-line ml-1"></i>
-                    טאבלט
-                </button>
-                <button class="device-toggle" data-device="mobile">
-                    <i class="ri-smartphone-line ml-1"></i>
+                <button id="mobileView" class="device-btn text-gray-600 px-3 py-2 text-sm hover:text-gray-900" data-device="mobile">
+                    <i class="ri-smartphone-line"></i>
                     מובייל
                 </button>
             </div>
             
-            <div class="preview-container">
-                <iframe id="previewFrame" 
-                        class="preview-frame" 
-                        src="../store-front/home.php?preview=1&store=<?php echo urlencode($store['slug']); ?>">
-                </iframe>
-            </div>
+            <!-- כפתור פעולה -->
+            <button id="saveBtn" class="figma-button bg-blue-600 hover:bg-blue-700 text-white">
+                <i class="ri-save-line"></i>
+                שמור ופרסם
+            </button>
         </div>
     </div>
-
-    <!-- נתונים גלובליים -->
+    
+    <div class="flex h-full" dir="rtl">
+        <!-- פאנל צד ימין - סקשנים -->
+        <div class="figma-sidebar w-80 h-full overflow-y-auto">
+            <div class="p-5">
+                
+                <!-- כותרת + כפתור הוסף סקשן -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-base font-semibold text-gray-900">סקשנים</h2>
+                    
+                    <!-- כפתור הוסף סקשן עם תפריט -->
+                    <div class="add-section-trigger relative">
+                        <button class="figma-button">
+                            <i class="ri-add-line text-lg"></i>
+                        </button>
+                        
+                        <!-- תפריט סוגי סקשנים -->
+                        <div class="add-section-menu absolute left-0 top-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 py-2 w-48 hidden" style="z-index: 9999;">
+                            <button class="add-section-btn w-full px-4 py-2 text-right hover:bg-gray-50 flex items-center gap-3 justify-end" data-type="hero">
+                                <span>סקשן הירו</span>
+                                <i class="ri-image-line text-blue-600"></i>
+                            </button>
+                            <button class="add-section-btn w-full px-4 py-2 text-right hover:bg-gray-50 flex items-center gap-3 justify-end" data-type="text">
+                                <span>בלוק טקסט</span>
+                                <i class="ri-text text-green-600"></i>
+                            </button>
+                            <button class="add-section-btn w-full px-4 py-2 text-right hover:bg-gray-50 flex items-center gap-3 justify-end" data-type="products">
+                                <span>רשת מוצרים</span>
+                                <i class="ri-shopping-bag-line text-purple-600"></i>
+                            </button>
+                            <button class="add-section-btn w-full px-4 py-2 text-right hover:bg-gray-50 flex items-center gap-3 justify-end" data-type="categories">
+                                <span>רשת קטגוריות</span>
+                                <i class="ri-grid-line text-orange-600"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- רשימת סקשנים -->
+                <div id="sectionsList" class="space-y-2">
+                    <!-- סקשנים יווצרו כאן דינמית -->
+                </div>
+                
+                <!-- מצב ריק -->
+                <div id="emptySections" class="text-center py-12 text-gray-500" style="display: none;">
+                    <i class="ri-layout-line text-4xl mb-4 text-gray-300"></i>
+                    <p class="text-sm">עדיין לא הוספת סקשנים</p>
+                    <p class="text-xs mt-1">לחץ על הכפתור + להתחלה</p>
+                </div>
+            </div>
+            
+            <!-- פאנל הגדרות -->
+            <div id="settingsPanel" class="border-t border-gray-200 p-5" style="display: none;">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-900">הגדרות סקשן</h3>
+                    <button id="closeSettings" class="text-gray-400 hover:text-gray-600">
+                        <i class="ri-close-line"></i>
+                    </button>
+                </div>
+                
+                <div id="settingsContent">
+                    <!-- תוכן הגדרות יוצג כאן -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- iframe - תצוגת האתר -->
+        <div class="flex-1 bg-white">
+            <iframe 
+                id="previewFrame" 
+                src="../store-front/home.php?preview=1&store=<?php echo urlencode($store['slug']); ?>"
+                class="w-full h-full border-none">
+            </iframe>
+        </div>
+    </div>
+    
+    <!-- משתנים גלובליים -->
     <script>
-        window.builderData = {
-            storeId: <?php echo json_encode($store['id']); ?>,
-            pageId: <?php echo json_encode($currentPage['id']); ?>,
+        window.builderConfig = {
             sections: <?php echo json_encode($sections); ?>,
-            isPublished: <?php echo json_encode((bool)$currentPage['is_published']); ?>
+            storeSlug: '<?php echo $store['slug']; ?>',
+            storeId: <?php echo $store['id']; ?>,
+            isPublished: <?php echo json_encode($isPublished); ?>
         };
     </script>
-
-    <!-- סקריפטים -->
-    <script src="js/core.js"></script>
-    <script src="js/render-iframe.js"></script>
-    <script src="js/builder.js"></script>
-
+    
+    <!-- Device Sync Manager - מנהל סינכרון מכשירים -->
+    <script src="js/device-sync-manager.js"></script>
+    
+    <!-- קבצי JavaScript מודולריים -->
+    <script src="js/builder-core.js"></script>
+    <script src="js/sections-manager.js"></script>
+    <script src="js/settings-manager.js"></script>
+    <script src="js/builder-main.js"></script>
+    
+    <!-- Simple Background Handler -->
+    <script src="js/simple-background-handler.js"></script>
+    
+    <!-- Responsive Typography Handler -->
+    <script src="js/responsive-typography-handler.js"></script>
+    
+    <!-- Responsive Height Handler -->
+    <script src="js/responsive-height-handler.js"></script>
+    
+    <!-- Section Width Handler -->
+    <script src="js/section-width-handler.js"></script>
+    
+    <!-- Accordion Handler -->
+    <script src="js/accordion-handler.js"></script>
+    
+    <!-- Buttons Repeater Handler -->
+    <script src="js/buttons-repeater-handler.js"></script>
+    
+    <!-- Notifications Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+    
 </body>
 </html> 

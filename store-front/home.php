@@ -1,7 +1,7 @@
 <?php
 /**
  * עמוד בית של החנות - store-front/home.php
- * מציג את הדף הנבנה מסקשנים דינמיים
+ * מציג את הדף הנבנה מסקשנים דינמיים עם הבילדר החדש
  */
 
 require_once '../includes/config.php';
@@ -27,31 +27,22 @@ try {
     $stmt->execute([$store['id']]);
     $pageData = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    // DEBUG: הוספת לוגים לבדיקה
-    error_log("🔧 DEBUG store-front: Store ID = " . $store['id']);
-    error_log("🔧 DEBUG store-front: Page data exists = " . ($pageData ? 'YES' : 'NO'));
-    if ($pageData) {
-        error_log("🔧 DEBUG store-front: Is published = " . ($pageData['is_published'] ? 'YES' : 'NO'));
-        error_log("🔧 DEBUG store-front: Raw page_data = " . $pageData['page_data']);
-    }
-    
     // בסביבת פיתוח - הצג גם דפים שלא פורסמו
     $isDevelopment = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false);
     
     if (!$pageData || (!$pageData['is_published'] && !$isDevelopment)) {
-        // אם אין דף פרסום - דף ריק
+        // אם אין דף - הודעה לעריכה
         $sections = [];
-        error_log("🔧 DEBUG store-front: No published page - empty sections");
     } else {
         $sections = json_decode($pageData['page_data'], true) ?: [];
-        error_log("🔧 DEBUG store-front: Loaded sections count = " . count($sections));
     }
 } catch (Exception $e) {
-    error_log("🔧 DEBUG store-front: Error loading page data: " . $e->getMessage());
-    $sections = getDefaultSections();
+    error_log("Error loading page data: " . $e->getMessage());
+    $sections = [];
 }
 
-
+// טעינת מערכת הרינדור של סקשנים
+require_once '../editor/sections/hero/template.php';
 
 ?>
 <!DOCTYPE html>
@@ -73,452 +64,447 @@ try {
     <style>
         body {
             font-family: 'Noto Sans Hebrew', sans-serif;
+            direction: rtl;
+        }
+        
+        /* CSS משתנים למענה */
+        @media (max-width: 768px) {
+            .mobile-only { display: block !important; }
+            .desktop-only { display: none !important; }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-only { display: none !important; }
+            .desktop-only { display: block !important; }
+        }
+        
+        /* אנימציות כניסה */
+        [data-animation] {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        [data-animation].animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* סוגי אנימציות ספציפיים */
+        [data-animation="fade-in"] {
+            transform: none;
+        }
+        
+        [data-animation="fade-in"].animate-in {
+            transform: none;
+        }
+        
+        [data-animation="slide-up"] {
+            transform: translateY(50px);
+        }
+        
+        [data-animation="slide-up"].animate-in {
+            transform: translateY(0);
+        }
+        
+        [data-animation="zoom-in"] {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        
+        [data-animation="zoom-in"].animate-in {
+            transform: scale(1);
+            opacity: 1;
         }
     </style>
 </head>
 <body class="bg-gray-50">
-    
-    <!-- הדר -->
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-4 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <h1 class="text-xl font-bold text-gray-900"><?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></h1>
-                </div>
-                
-                <nav class="hidden md:flex items-center gap-6">
-                    <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">בית</a>
-                    <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">מוצרים</a>
-                    <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">קטגוריות</a>
-                    <a href="#" class="text-gray-600 hover:text-gray-900 transition-colors">צור קשר</a>
-                </nav>
-                
-                <div class="flex items-center gap-3">
-                    <button class="p-2 text-gray-600 hover:text-gray-900 transition-colors">
-                        <i class="ri-search-line text-xl"></i>
-                    </button>
-                    <button class="p-2 text-gray-600 hover:text-gray-900 transition-colors relative">
-                        <i class="ri-shopping-cart-line text-xl"></i>
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">0</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
 
-    <!-- תוכן דינמי מסקשנים -->
+    <!-- רינדור סקשנים -->
     <main>
         <?php if (!empty($sections)): ?>
             <?php foreach ($sections as $section): ?>
-                <?php renderSection($section); ?>
+                <?php
+                echo '<script>console.log("🔧 DEBUG: Updating sections", ' . json_encode($sections) . ');</script>';
+                echo '<script>console.log("🔧 DEBUG: Rendering section", ' . json_encode($section) . ');</script>';
+                
+                if ($section['type'] === 'hero') {
+                    echo renderHeroSection($section);
+                }
+                ?>
             <?php endforeach; ?>
         <?php else: ?>
-            <!-- דף ריק - הסקשנים יתווספו דינמית על ידי העורך -->
+            <!-- הודעת ברירת מחדל אם אין סקשנים -->
+            <div class="min-h-screen flex items-center justify-center bg-gray-100">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-gray-900 mb-4">ברוכים הבאים לחנות</h1>
+                    <p class="text-gray-600 mb-6">הדף נמצא בשלבי בנייה</p>
+                    <a href="/editor/" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                        עריכת הדף
+                    </a>
+                </div>
+            </div>
         <?php endif; ?>
     </main>
 
-    <!-- פוטר -->
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4"><?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?></h3>
-                    <p class="text-gray-400">החנות המקוונת הטובה ביותר עבור כל הצרכים שלכם</p>
-                </div>
-                
-                <div>
-                    <h4 class="font-semibold mb-4">קישורים מהירים</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors">מוצרים</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">קטגוריות</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">מידע</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">צור קשר</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="font-semibold mb-4">תמיכה</h4>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-white transition-colors">מדיניות החזרות</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">תנאי שימוש</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">מדיניות פרטיות</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($store['name'] ?? 'החנות שלי'); ?>. כל הזכויות שמורות.</p>
-            </div>
-        </div>
-    </footer>
-
-    <!-- DEBUG INFO -->
-    <div id="debug-info" style="position: fixed; bottom: 10px; left: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; font-size: 12px; border-radius: 5px; z-index: 9999; display: none;">
-        <strong>🔧 DEBUG INFO:</strong><br>
-        Store ID: <?php echo $store['id']; ?><br>
-        Sections Count: <?php echo count($sections); ?><br>
-        <?php if (isset($pageData)): ?>
-            Is Published: <?php echo $pageData['is_published'] ? 'YES' : 'NO'; ?><br>
-            Page Data: <?php echo htmlspecialchars(substr($pageData['page_data'], 0, 100)); ?>...<br>
-        <?php else: ?>
-            No page data found<br>
-        <?php endif; ?>
-    </div>
-    
-    <!-- JavaScript עבור עדכון דינמי מהעורך -->
     <script>
-    // הצגת debug info כשלוחצים Ctrl+D
-    document.addEventListener('keydown', function(e) {
-        if (e.ctrlKey && e.key === 'd') {
-            e.preventDefault();
-            const debugDiv = document.getElementById('debug-info');
-            debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
-        }
-    });
-    </script>
-    <script>
-    // מאזין להודעות מהעורך
-    window.addEventListener('message', function(event) {
-        // בדיקת מקור ההודעה (אמצעי אבטחה)
-        if (event.origin !== window.location.origin) {
-            return;
-        }
-        
-        if (event.data.type === 'updateSections') {
-            updatePageSections(event.data.sections);
-        }
-    });
-    
-    /**
-     * עדכון סקשנים בעמוד
-     */
-    function updatePageSections(sections) {
-        const mainElement = document.querySelector('main');
-        if (!mainElement) return;
-        
-        console.log('🔧 DEBUG: Updating sections', sections);
-        
-        // ניקוי התוכן הקיים (כולל style tags ישנים)
-        mainElement.innerHTML = '';
-        
-        // מחיקת CSS ישן
-        document.querySelectorAll('style[data-hero-section]').forEach(style => style.remove());
-        
-        // יצירת סקשנים חדשים
-        sections.forEach(section => {
-            console.log('🔧 DEBUG: Rendering section', section);
+        // JavaScript לטיפול ב-responsive behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Store front loaded successfully (from store-front/home.php)');
             
-            const sectionHTML = renderSectionHTML(section);
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = sectionHTML;
+            // אתחול אנימציות
+            initAnimations();
+        });
+        
+        /**
+         * אתחול אנימציות כניסה
+         */
+        function initAnimations() {
+            // אלמנטים עם אנימציות
+            const animatedElements = document.querySelectorAll('[data-animation]');
             
-            // העברת כל הילדים (כולל style tags)
-            while (tempDiv.firstChild) {
-                mainElement.appendChild(tempDiv.firstChild);
+            if (animatedElements.length === 0) {
+                console.log('🎭 No animated elements found');
+                return;
+            }
+            
+            console.log(`🎭 Found ${animatedElements.length} animated elements`);
+            
+            // Intersection Observer לזיהוי כניסה לתצוגה
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const element = entry.target;
+                        const animationType = element.dataset.animation;
+                        
+                        console.log(`🎭 Triggering animation: ${animationType}`);
+                        
+                        // הפעלת האנימציה
+                        setTimeout(() => {
+                            element.classList.add('animate-in');
+                        }, 100); // עיכוב קטן לאפקט חלק יותר
+                        
+                        // הפסקת המעקב אחרי האלמנט (אנימציה חד-פעמית)
+                        observer.unobserve(element);
+                    }
+                });
+            }, {
+                threshold: 0.1, // 10% מהאלמנט בתצוגה
+                rootMargin: '0px 0px -50px 0px' // הפעלה מעט לפני שהאלמנט מופיע במלואו
+            });
+            
+            // מעקב אחרי כל האלמנטים המונפשים
+            animatedElements.forEach(element => {
+                observer.observe(element);
+            });
+        }
+        
+        // האזנה להודעות מהעורך (Editor)
+        window.addEventListener('message', function(event) {
+            // בדיקת מקור ההודעה
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+            
+            if (event.data.type === 'updateSections') {
+                console.log('📨 Received updateSections message (store-front/home.php):', event.data.sections);
+                updatePageSections(event.data.sections);
+            } else if (event.data.type === 'updateButton') {
+                console.log('📨 Received updateButton message:', event.data);
+                updateButtonInDOM(event.data.buttonIndex, event.data.buttonData);
+            } else if (event.data.type === 'deviceChanged') {
+                console.log('📨 Received deviceChanged message:', event.data.device);
+                updatePreviewDevice(event.data.device);
             }
         });
         
-        console.log('🔧 DEBUG: Sections updated, main content:', mainElement.innerHTML.substring(0, 200));
-    }
-    
-    /**
-     * יצירת HTML עבור סקשן
-     */
-    function renderSectionHTML(section) {
-        if (section.type === 'hero') {
-            return renderHeroSection(section);
-        }
+        console.log('🔧 Message listener registered (store-front/home.php)');
         
-        // Fallback לסקשנים אחרים
-        return `
-            <div class="py-16 bg-gray-100 text-center">
-                <h2 class="text-xl text-gray-800">סקשן: ${section.type}</h2>
-                <p class="text-gray-600 mt-2">${section.id}</p>
-            </div>
-        `;
-    }
-    
-    /**
-     * יצירת HTML עבור סקשן הירו
-     */
-    // Generate CSS for a single button
-    function generateButtonCSS(sectionId, button, index) {
-        // ברירות מחדל לכפתור
-        const defaults = {
-            bgColor: '#3B82F6',
-            textColor: '#FFFFFF',
-            borderColor: '#3B82F6',
-            hoverBgColor: '#2563EB',
-            hoverTextColor: '#FFFFFF',
-            hoverBorderColor: '#2563EB',
-            paddingTop: '12',
-            paddingBottom: '12',
-            paddingLeft: '24',
-            paddingRight: '24',
-            marginTop: '0',
-            marginBottom: '8',
-            marginLeft: '4',
-            marginRight: '4'
-        };
-        
-        const btn = { ...defaults, ...button };
-        
-        let css = `
-            #${sectionId} .hero-button-${index} {
-                display: inline-block;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                cursor: pointer;
-                border: 2px solid ${btn.borderColor};
-                background-color: ${btn.bgColor};
-                color: ${btn.textColor};
-        `;
-        
-        // Padding
-        css += `padding: ${btn.paddingTop}px ${btn.paddingRight}px ${btn.paddingBottom}px ${btn.paddingLeft}px;`;
-        
-        // Margin  
-        css += `margin: ${btn.marginTop}px ${btn.marginRight}px ${btn.marginBottom}px ${btn.marginLeft}px;`;
-        
-        // אם זה כפתור מותאם אישית, השתמש בצבעים מותאמים אישית
-        if (button.style === 'custom') {
-            // הצבעים כבר מוגדרים למעלה דרך btn object
-        } else {
-            // סגנונות מוגדרים מראש
-            switch (button.style) {
-                case 'primary':
-                    css += `
-                        background-color: #3B82F6;
-                        color: white;
-                        border-color: #3B82F6;
-                    `;
-                    break;
-                case 'secondary':
-                    css += `
-                        background-color: #6B7280;
-                        color: white;
-                        border-color: #6B7280;
-                    `;
-                    break;
-                case 'outline':
-                    css += `
-                        background-color: transparent;
-                        color: white;
-                        border-color: white;
-                    `;
-                    break;
-            }
-        }
-        
-        css += `}`;
-        
-        // Hover states
-        css += `
-            #${sectionId} .hero-button-${index}:hover {
-        `;
-        
-        if (button.style === 'custom') {
-            css += `
-                background-color: ${btn.hoverBgColor};
-                color: ${btn.hoverTextColor};
-                border-color: ${btn.hoverBorderColor};
-            `;
-        } else {
-            switch (button.style) {
-                case 'primary':
-                    css += `background-color: #2563EB; border-color: #2563EB;`;
-                    break;
-                case 'secondary':
-                    css += `background-color: #4B5563; border-color: #4B5563;`;
-                    break;
-                case 'outline':
-                    css += `background-color: white; color: #1F2937; border-color: white;`;
-                    break;
-            }
-        }
-        
-        css += `}`;
-        
-        return css;
-    }
-    
-    // Generate HTML for a single button
-    function generateButtonHTML(button, index) {
-        const target = button.openInNewTab ? 'target="_blank"' : '';
-        const href = button.url || '#';
-        const text = button.text || 'כפתור';
-        
-        return `<a href="${href}" ${target} class="hero-button-${index}">${text}</a>`;
-    }
-
-    function renderHeroSection(section) {
-        // עיבוד ברירות מחדל מקיפות
-        const settings = {
-            title: 'ברוכים הבאים לחנות שלנו',
-            subtitle: 'גלו את המוצרים הטובים ביותר במחירים הטובים ביותר',
-            titleColor: '#FFFFFF',
-            subtitleColor: '#E5E7EB',
-            bgColor: '#3B82F6',
-            heightDesktop: '75vh',
-            buttons: [],
-            // Typography defaults
-            heroTitleFontSize: '48',
-            heroTitleTextType: 'h1',
-            heroTitleFontFamily: 'Noto Sans Hebrew',
-            heroTitleFontWeight: '700',
-            heroTitleFontStyle: 'normal',
-            heroTitleLineHeight: '1.2',
-            heroTitleLetterSpacing: '0',
-            heroTitleTextAlign: 'right',
-            heroTitleTextDecoration: 'none',
-            heroTitleTextTransform: 'none',
-            heroSubtitleFontSize: '18',
-            heroSubtitleTextType: 'p',
-            heroSubtitleFontFamily: 'Noto Sans Hebrew',
-            heroSubtitleFontWeight: '400',
-            heroSubtitleFontStyle: 'normal',
-            heroSubtitleLineHeight: '1.5',
-            heroSubtitleLetterSpacing: '0',
-            heroSubtitleTextAlign: 'right',
-            heroSubtitleTextDecoration: 'none',
-            heroSubtitleTextTransform: 'none',
-            ...section.settings
-        };
-        
-        console.log('🔧 DEBUG: Rendering hero with settings:', settings);
-        
-        // יצירת CSS דינמי 
-        const heightDesktop = settings.heightDesktop === 'custom' 
-            ? (settings.customHeightDesktop || 600) + 'px' 
-            : settings.heightDesktop;
+        /**
+         * עדכון סקשנים בעמוד בזמן אמת
+         */
+        function updatePageSections(sections) {
+            const mainElement = document.querySelector('main');
+            if (!mainElement) return;
             
-        let css = `
-            #${section.id} {
-                height: ${heightDesktop};
-                background-color: ${settings.bgColor};
-            }
-        `;
-        
-        // Title styles עם כל הגדרות הטיפוגרפיה
-        const titleTag = settings.heroTitleTextType || 'h1';
-        css += `
-            #${section.id} .hero-title {
-                color: ${settings.titleColor};
-                margin-bottom: 1rem;
-                font-size: ${settings.heroTitleFontSize || 48}px;
-                font-family: "${settings.heroTitleFontFamily || 'Noto Sans Hebrew'}", sans-serif;
-                font-weight: ${settings.heroTitleFontWeight || 700};
-                font-style: ${settings.heroTitleFontStyle || 'normal'};
-                line-height: ${settings.heroTitleLineHeight || 1.2};
-                letter-spacing: ${settings.heroTitleLetterSpacing || 0}px;
-                text-align: ${settings.heroTitleTextAlign || 'right'};
-                text-decoration: ${settings.heroTitleTextDecoration || 'none'};
-                text-transform: ${settings.heroTitleTextTransform || 'none'};
-            }
-        `;
-        
-        // Subtitle styles עם כל הגדרות הטיפוגרפיה
-        const subtitleTag = settings.heroSubtitleTextType || 'p';
-        css += `
-            #${section.id} .hero-subtitle {
-                color: ${settings.subtitleColor};
-                margin-bottom: 2rem;
-                font-size: ${settings.heroSubtitleFontSize || 18}px;
-                font-family: "${settings.heroSubtitleFontFamily || 'Noto Sans Hebrew'}", sans-serif;
-                font-weight: ${settings.heroSubtitleFontWeight || 400};
-                font-style: ${settings.heroSubtitleFontStyle || 'normal'};
-                line-height: ${settings.heroSubtitleLineHeight || 1.5};
-                letter-spacing: ${settings.heroSubtitleLetterSpacing || 0}px;
-                text-align: ${settings.heroSubtitleTextAlign || 'right'};
-                text-decoration: ${settings.heroSubtitleTextDecoration || 'none'};
-                text-transform: ${settings.heroSubtitleTextTransform || 'none'};
-            }
-        `;
-        
-        // Button styles
-        if (settings.buttons && settings.buttons.length > 0) {
-            settings.buttons.forEach((button, index) => {
-                if (button && button.text) {
-                    css += generateButtonCSS(section.id, button, index);
+            console.log('🔧 DEBUG: Updating sections in real-time', sections);
+            
+            // ניקוי התוכן הקיים
+            mainElement.innerHTML = '';
+            
+            // מחיקת style tags ישנים
+            document.querySelectorAll('style[data-hero-section]').forEach(style => style.remove());
+            
+            // יצירת סקשנים חדשים
+            sections.forEach(section => {
+                console.log('🔧 DEBUG: Rendering section in real-time', section);
+                
+                if (section.type === 'hero') {
+                    // שליחת בקשה לרינדור הירו
+                    renderHeroSectionRealTime(section, mainElement);
                 }
             });
+            
+            // אתחול אנימציות לסקשנים החדשים
+            setTimeout(() => {
+                initAnimations();
+            }, 100);
         }
         
-        // Mobile responsive styles
-        css += `
-            @media (max-width: 767px) {
-                #${section.id} .hero-title {
-                    font-size: ${settings.heroTitleFontSize ? Math.round(settings.heroTitleFontSize * 0.7) : 32}px;
+        /**
+         * רינדור הירו בזמן אמת
+         */
+        async function renderHeroSectionRealTime(section, container) {
+            try {
+                // שליחת בקשה לטמפלט הירו
+                const response = await fetch('../editor/sections/hero/template.php?render=1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(section)
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    container.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Hero section rendered in real-time');
+                } else {
+                    console.error('❌ Failed to render hero section:', response.status);
+                    fallbackRenderHero(section, container);
                 }
-                #${section.id} .hero-subtitle {
-                    font-size: ${settings.heroSubtitleFontSize ? Math.round(settings.heroSubtitleFontSize * 0.9) : 16}px;
-                }
+                
+            } catch (error) {
+                console.error('❌ Error rendering hero section:', error);
+                fallbackRenderHero(section, container);
             }
-        `;
-        
-        // Generate buttons HTML
-        let buttonsHTML = '';
-        if (settings.buttons && settings.buttons.length > 0) {
-            buttonsHTML = '<div class="hero-buttons flex flex-wrap gap-4 justify-center">';
-            settings.buttons.forEach((button, index) => {
-                if (button && button.text) {
-                    buttonsHTML += generateButtonHTML(button, index);
-                }
-            });
-            buttonsHTML += '</div>';
-        } else {
-            // Default button
-            buttonsHTML = `
-                <div class="hero-buttons flex flex-wrap gap-4 justify-center">
-                    <a href="#" class="bg-white text-gray-900 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                        קנה עכשיו
-                    </a>
-                </div>
-            `;
         }
         
-        return `
-            <style data-hero-section="${section.id}">${css}</style>
-            <section id="${section.id}" class="hero-section relative overflow-hidden">
-                <!-- Content Container -->
-                <div class="relative z-20 container mx-auto px-4 h-full flex items-center">
-                    <div class="hero-content w-full text-center">
-                        <!-- Title -->
-                        ${settings.title ? `<${titleTag} class="hero-title">${settings.title}</${titleTag}>` : ''}
-                        
-                        <!-- Subtitle -->
-                        ${settings.subtitle ? `<${subtitleTag} class="hero-subtitle">${settings.subtitle}</${subtitleTag}>` : ''}
-                        
-                        <!-- Buttons -->
-                        ${buttonsHTML}
+        /**
+         * רינדור נוקשה של הירו אם הטמפלט לא זמין
+         */
+        function fallbackRenderHero(section, container) {
+            const titleText = getNestedValue(section, 'content.title.text', 'כותרת');
+            const subtitleText = getNestedValue(section, 'content.subtitle.text', 'תת-כותרת');
+            const bgColor = getNestedValue(section, 'styles.desktop.background-color', '#3b82f6');
+            const height = getNestedValue(section, 'styles.desktop.height', '100vh');
+            
+            const html = `
+                <section style="
+                    background-color: ${bgColor};
+                    height: ${height};
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Noto Sans Hebrew', sans-serif;
+                    direction: rtl;
+                ">
+                    <div style="text-align: center; color: white;">
+                        <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 20px;">
+                            ${titleText}
+                        </h1>
+                        <p style="font-size: 18px; color: #e5e7eb; margin-bottom: 30px;">
+                            ${subtitleText}
+                        </p>
+                        <a href="#" style="
+                            background-color: white;
+                            color: #3b82f6;
+                            padding: 12px 24px;
+                            border-radius: 6px;
+                            text-decoration: none;
+                            font-weight: 500;
+                        ">קנה עכשיו</a>
                     </div>
-                </div>
-            </section>
-        `;
-    }
+                </section>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+        }
+        
+        /**
+         * עדכון מיידי של כפתור ב-DOM ללא רינדור מלא
+         */
+        function updateButtonInDOM(buttonIndex, buttonData) {
+            console.log(`🔘 Updating button ${buttonIndex} in DOM:`, buttonData);
+            
+            // מצא את הכפתור בDM
+            const heroSection = document.querySelector('.hero-section');
+            if (!heroSection) {
+                console.warn('⚠️ Hero section not found for button update');
+                return;
+            }
+            
+            const buttons = heroSection.querySelectorAll('.hero-button');
+            const targetButton = buttons[buttonIndex];
+            
+            if (!targetButton) {
+                console.warn(`⚠️ Button ${buttonIndex} not found in DOM`);
+                return;
+            }
+            
+            try {
+                // עדכון טקסט הכפתור
+                if (buttonData.text) {
+                    // שמור על אייקון אם קיים
+                    const icon = targetButton.querySelector('i');
+                    if (icon && buttonData.icon) {
+                        // וידוא שהאייקון מתחיל ב-ri- (Remix Icons) או Font Awesome
+                        let iconClass = buttonData.icon;
+                        if (!iconClass.startsWith('ri-') && !iconClass.startsWith('fa-') && !iconClass.startsWith('fas ') && !iconClass.startsWith('fab ')) {
+                            iconClass = 'ri-' + iconClass;
+                        }
+                        icon.className = iconClass + ' mr-2';
+                    } else if (buttonData.icon && !icon) {
+                        // הוסף אייקון חדש
+                        let iconClass = buttonData.icon;
+                        if (!iconClass.startsWith('ri-') && !iconClass.startsWith('fa-') && !iconClass.startsWith('fas ') && !iconClass.startsWith('fab ')) {
+                            iconClass = 'ri-' + iconClass;
+                        }
+                        targetButton.innerHTML = `<i class="${iconClass} mr-2"></i>` + buttonData.text;
+                    } else if (!buttonData.icon && icon) {
+                        // הסר אייקון
+                        targetButton.innerHTML = buttonData.text;
+                    } else {
+                        // רק טקסט
+                        targetButton.textContent = buttonData.text;
+                    }
+                }
+                
+                // עדכון URL
+                if (buttonData.url) {
+                    targetButton.href = buttonData.url;
+                }
+                
+                // עדכון סגנון הכפתור
+                if (buttonData.styles || buttonData.style) {
+                    const style = buttonData.style || 'solid';
+                    const bgColor = buttonData.styles?.['background-color'] || '#3b82f6';
+                    const textColor = buttonData.styles?.color || '#ffffff';
+                    const borderRadius = buttonData.styles?.['border-radius'] || '6px';
+                    
+                    // הסר classes ישנים
+                    targetButton.className = targetButton.className.replace(/button-\w+/g, '');
+                    
+                    // הוסף class חדש
+                    targetButton.classList.add(`button-${style}`);
+                    
+                    // עדכון inline styles
+                    applyButtonStyle(targetButton, style, bgColor, textColor, borderRadius);
+                }
+                
+                console.log(`✅ Button ${buttonIndex} updated successfully`);
+                
+            } catch (error) {
+                console.error(`❌ Error updating button ${buttonIndex}:`, error);
+            }
+        }
+        
+        /**
+         * החלת סגנון על כפתור
+         */
+        function applyButtonStyle(button, style, bgColor, textColor, borderRadius) {
+            const baseStyle = {
+                padding: '12px 24px',
+                borderRadius: borderRadius,
+                fontWeight: '500',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                border: '2px solid transparent'
+            };
+            
+            let specificStyle = {};
+            
+            switch (style) {
+                case 'solid':
+                case 'primary':
+                    specificStyle = {
+                        backgroundColor: bgColor,
+                        color: textColor,
+                        borderColor: bgColor
+                    };
+                    break;
+                case 'outline':
+                case 'secondary':
+                    specificStyle = {
+                        backgroundColor: 'transparent',
+                        color: bgColor,
+                        borderColor: bgColor
+                    };
+                    break;
+                case 'black':
+                    specificStyle = {
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        borderColor: '#000000'
+                    };
+                    break;
+                case 'white':
+                    specificStyle = {
+                        backgroundColor: '#ffffff',
+                        color: '#000000',
+                        borderColor: '#ffffff'
+                    };
+                    break;
+                case 'underline':
+                    specificStyle = {
+                        backgroundColor: 'transparent',
+                        color: bgColor,
+                        border: 'none',
+                        borderBottom: '2px solid ' + bgColor,
+                        borderRadius: '0'
+                    };
+                    break;
+            }
+            
+            // החל את הסגנונות
+            Object.assign(button.style, baseStyle, specificStyle);
+        }
+        
+        /**
+         * עדכון התצוגה המקדימה למכשיר חדש
+         */
+        function updatePreviewDevice(device) {
+            console.log(`📱 Updating preview device to: ${device}`);
+            
+            // עדכן data attribute על הbody
+            document.body.setAttribute('data-preview-device', device);
+            
+            // הוסף CSS class זמני להדגשת המעבר
+            document.body.classList.add(`preview-${device}`);
+            document.body.classList.remove(`preview-${device === 'desktop' ? 'mobile' : 'desktop'}`);
+            
+            // אפקט ויזואלי קל למעבר
+            document.body.style.transition = 'all 0.3s ease';
+            
+            setTimeout(() => {
+                document.body.style.transition = '';
+                console.log(`✅ Preview updated to ${device} device`);
+            }, 300);
+        }
+        
+        /**
+         * קבלת ערך מarray עמוק
+         */
+        function getNestedValue(obj, path, defaultValue) {
+            if (!obj || !path) return defaultValue;
+            
+            const keys = path.split('.');
+            let current = obj;
+            
+            for (const key of keys) {
+                if (current && typeof current === 'object' && key in current) {
+                    current = current[key];
+                } else {
+                    return defaultValue;
+                }
+            }
+            
+            return current !== undefined ? current : defaultValue;
+        }
     </script>
-
 </body>
-</html>
-
-<?php
-/**
- * רינדור סקשן
- */
-function renderSection($section) {
-    $sectionType = $section['type'];
-    $sectionPath = "../editor/settings/sections/{$sectionType}/template.php";
-    
-    if (file_exists($sectionPath)) {
-        include $sectionPath;
-    } else {
-        // fallback לסקשן בסיסי - אבל גם הודעת debug
-        echo '<div class="py-16 bg-gray-100 text-center">';
-        echo '<h2 class="text-xl text-gray-800">סקשן: ' . htmlspecialchars($sectionType) . '</h2>';
-        echo '<p class="text-gray-600 text-sm mt-2">Template not found: ' . htmlspecialchars($sectionPath) . '</p>';
-        echo '</div>';
-    }
-}
-?> 
+</html> 

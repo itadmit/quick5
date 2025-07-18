@@ -4,6 +4,21 @@
  * סקשן תמונת פתיחה מתקדם עם תמיכה בכל האפשרויות
  */
 
+// פונקציה להמרת hex לrgba
+function hex2rgba($hex, $opacity = 1) {
+    $hex = ltrim($hex, '#');
+    
+    if (strlen($hex) == 3) {
+        $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+    }
+    
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+    
+    return "rgba($r, $g, $b, $opacity)";
+}
+
 // הגדרות ברירת מחדל
 $defaultSettings = [
     'title' => '',
@@ -11,20 +26,32 @@ $defaultSettings = [
     'description' => '', // תמיכה בשני השמות
     'content' => '',
     'bg_type' => 'color',
+    'background-type' => 'color',
     'bg_color' => '#1e40af',
-    'background_color' => '#1e40af', // תמיכה בשני השמות
+    'background-color' => '#1e40af', // תמיכה בשני השמות
     'gradient_start' => '#1e40af',
     'gradient_end' => '#3b82f6',
+    'gradient-color1' => '#1e40af',
+    'gradient-color2' => '#3b82f6',
     'gradient_direction' => 'to bottom',
+    'gradient-direction' => 'to bottom',
     'bg_image' => '',
+    'background-image' => '',
+    'background-video' => '',
     'bg_image_size' => 'cover',
+    'background-size' => 'cover',
+    'background-repeat' => 'no-repeat',
     'bg_video_url' => '',
     'bg_video_file' => '',
     'video_type' => 'file',
     'video_autoplay' => true,
     'video_loop' => true,
+    'video-loop' => true,
     'video_muted' => true,
+    'video-muted' => true,
     'video_overlay' => true,
+    'video-overlay-opacity' => 50,
+    'image-overlay-opacity' => 40,
     'video_overlay_color' => '#000000',
     'title_color' => '#ffffff',
     'text_color' => '#ffffff', // תמיכה בשני השמות
@@ -53,9 +80,12 @@ $defaultSettings = [
 
 $settings = array_merge($defaultSettings, $sectionSettings ?? []);
 
-// תמיכה בשמות שונים של אותן הגדרות
+// תמיכה בשמות שונים של אותן הגדרות - New System Compatibility
 if (!empty($settings['description']) && empty($settings['subtitle'])) {
     $settings['subtitle'] = $settings['description'];
+}
+if (!empty($settings['background-color']) && empty($settings['bg_color'])) {
+    $settings['bg_color'] = $settings['background-color'];
 }
 if (!empty($settings['background_color']) && empty($settings['bg_color'])) {
     $settings['bg_color'] = $settings['background_color'];
@@ -65,6 +95,34 @@ if (!empty($settings['text_color']) && empty($settings['title_color'])) {
 }
 if (!empty($settings['button_color']) && empty($settings['button_bg_color'])) {
     $settings['button_bg_color'] = $settings['button_color'];
+}
+// תמיכה במערכת החדשה
+if (!empty($settings['background-type'])) {
+    $settings['bg_type'] = $settings['background-type'];
+}
+if (!empty($settings['background-image'])) {
+    $settings['bg_image'] = $settings['background-image'];
+}
+if (!empty($settings['background-video'])) {
+    $settings['bg_video_url'] = $settings['background-video'];
+}
+if (!empty($settings['background-size'])) {
+    $settings['bg_image_size'] = $settings['background-size'];
+}
+if (!empty($settings['gradient-color1'])) {
+    $settings['gradient_start'] = $settings['gradient-color1'];
+}
+if (!empty($settings['gradient-color2'])) {
+    $settings['gradient_end'] = $settings['gradient-color2'];
+}
+if (!empty($settings['gradient-direction'])) {
+    $settings['gradient_direction'] = $settings['gradient-direction'];
+}
+if (isset($settings['video-loop'])) {
+    $settings['video_loop'] = $settings['video-loop'];
+}
+if (isset($settings['video-muted'])) {
+    $settings['video_muted'] = $settings['video-muted'];
 }
 
 // יצירת סגנון הרקע
@@ -78,7 +136,8 @@ switch ($settings['bg_type']) {
         break;
     case 'image':
         if (!empty($settings['bg_image'])) {
-            $backgroundStyle = "background-image: url('{$settings['bg_image']}'); background-size: {$settings['bg_image_size']}; background-position: center; background-repeat: no-repeat;";
+            $backgroundRepeat = $settings['background-repeat'] ?? 'no-repeat';
+            $backgroundStyle = "background-image: url('{$settings['bg_image']}'); background-size: {$settings['bg_image_size']}; background-position: center; background-repeat: {$backgroundRepeat};";
         }
         break;
     case 'video':
@@ -165,11 +224,26 @@ $buttonStyle = "
                 <?php endif; ?>
                 
                 <!-- שכבת כיסוי -->
-                <?php if ($settings['video_overlay']): ?>
-                    <div class="absolute inset-0" style="background-color: <?= htmlspecialchars($settings['video_overlay_color']) ?>;"></div>
+                <?php if ($settings['video_overlay'] || !empty($settings['video-overlay-opacity'])): ?>
+                    <?php 
+                    $overlayOpacity = $settings['video-overlay-opacity'] ?? 50;
+                    $overlayColor = $settings['video_overlay_color'] ?? '#000000';
+                    $overlayRgba = hex2rgba($overlayColor, $overlayOpacity / 100);
+                    ?>
+                    <div class="absolute inset-0" style="background-color: <?= $overlayRgba ?>;"></div>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
+    <?php endif; ?>
+    
+    <!-- שכבת כיסוי לתמונות -->
+    <?php if ($settings['bg_type'] === 'image' && !empty($settings['bg_image']) && !empty($settings['image-overlay-opacity'])): ?>
+        <?php 
+        $imageOverlayOpacity = $settings['image-overlay-opacity'] ?? 40;
+        $imageOverlayColor = '#000000';
+        $imageOverlayRgba = hex2rgba($imageOverlayColor, $imageOverlayOpacity / 100);
+        ?>
+        <div class="absolute inset-0 z-5" style="background-color: <?= $imageOverlayRgba ?>;"></div>
     <?php endif; ?>
     
     <!-- תוכן -->

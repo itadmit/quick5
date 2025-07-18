@@ -127,6 +127,7 @@ foreach ($sections as $section) {
 <!-- Home Page JavaScript -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('⚠️ DUPLICATE: quickshop-evening/templates/home.php loaded!');
     // מאזין לעדכונים מהקסטומיזר
     window.addEventListener('message', function(event) {
         if (event.data.type === 'update-sections') {
