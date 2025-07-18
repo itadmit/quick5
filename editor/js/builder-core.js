@@ -181,6 +181,107 @@ class BuilderCore {
                         }
                     }
                 }
+            },
+            categories: {
+                id: id,
+                type: 'categories',
+                visible: true,
+                styles: {
+                    'background-type': 'color',
+                    'background-color': '#f9fafb',
+                    'section-width': 'container',
+                    'padding-top': '80px',
+                    'padding-bottom': '80px'
+                },
+                content: {
+                    title: {
+                        text: 'קטגוריות המוצרים שלנו',
+                        styles: {
+                            desktop: {
+                                'font-size': '36px',
+                                'font-weight': 'bold',
+                                'color': '#1f2937',
+                                'text-align': 'center',
+                                'line-height': '1.2'
+                            },
+                            mobile: {
+                                'font-size': '28px',
+                                'font-weight': 'bold',
+                                'color': '#1f2937',
+                                'text-align': 'center',
+                                'line-height': '1.2'
+                            }
+                        }
+                    },
+                    subtitle: {
+                        text: 'בחרו מתוך מגוון רחב של קטגוריות\nומצאו בדיוק מה שאתם מחפשים',
+                        styles: {
+                            desktop: {
+                                'font-size': '18px',
+                                'color': '#6b7280',
+                                'text-align': 'center',
+                                'line-height': '1.6'
+                            },
+                            mobile: {
+                                'font-size': '16px',
+                                'color': '#6b7280',
+                                'text-align': 'center',
+                                'line-height': '1.6'
+                            }
+                        }
+                    },
+                    grid: {
+                        columns: {
+                            desktop: 4,
+                            mobile: 2
+                        },
+                        gap: '24px',
+                        categories: [
+                            {
+                                id: 'cat_' + Date.now() + '_1',
+                                name: 'אלקטרוניקה',
+                                image: 'https://via.placeholder.com/300x200?text=אלקטרוניקה',
+                                url: '/category/electronics'
+                            },
+                            {
+                                id: 'cat_' + Date.now() + '_2',
+                                name: 'אופנה',
+                                image: 'https://via.placeholder.com/300x200?text=אופנה',
+                                url: '/category/fashion'
+                            },
+                            {
+                                id: 'cat_' + Date.now() + '_3',
+                                name: 'בית וגן',
+                                image: 'https://via.placeholder.com/300x200?text=בית+וגן',
+                                url: '/category/home-garden'
+                            },
+                            {
+                                id: 'cat_' + Date.now() + '_4',
+                                name: 'ספורט',
+                                image: 'https://via.placeholder.com/300x200?text=ספורט',
+                                url: '/category/sports'
+                            }
+                        ]
+                    },
+                    buttons: [
+                        {
+                            id: 'btn_' + Date.now(),
+                            text: 'צפה בכל הקטגוריות',
+                            url: '/categories',
+                            style: 'outline',
+                            styles: {
+                                'background-color': 'transparent',
+                                'color': '#3b82f6',
+                                'border': '2px solid #3b82f6',
+                                'padding': '12px 24px',
+                                'border-radius': '6px',
+                                'font-weight': '500',
+                                'text-decoration': 'none',
+                                'display': 'inline-block'
+                            }
+                        }
+                    ]
+                }
             }
         };
         

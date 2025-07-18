@@ -130,6 +130,9 @@ require_once '../editor/sections/hero/template.php';
                 
                 if ($section['type'] === 'hero') {
                     echo renderHeroSection($section);
+                } elseif ($section['type'] === 'categories') {
+                    require_once '../editor/sections/categories/template.php';
+                    echo renderCategoriesSection($section);
                 }
                 ?>
             <?php endforeach; ?>
@@ -242,6 +245,9 @@ require_once '../editor/sections/hero/template.php';
                 if (section.type === 'hero') {
                     // שליחת בקשה לרינדור הירו
                     renderHeroSectionRealTime(section, mainElement);
+                } else if (section.type === 'categories') {
+                    // שליחת בקשה לרינדור קטגוריות
+                    renderCategoriesSectionRealTime(section, mainElement);
                 }
             });
             
@@ -314,6 +320,87 @@ require_once '../editor/sections/hero/template.php';
                             text-decoration: none;
                             font-weight: 500;
                         ">קנה עכשיו</a>
+                    </div>
+                </section>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        /**
+         * רינדור קטגוריות בזמן אמת
+         */
+        async function renderCategoriesSectionRealTime(section, container) {
+            try {
+                // שליחת בקשה לטמפלט קטגוריות
+                const response = await fetch('../editor/sections/categories/template.php?render=1', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(section)
+                });
+                
+                if (response.ok) {
+                    const html = await response.text();
+                    container.insertAdjacentHTML('beforeend', html);
+                    console.log('✅ Categories section rendered in real-time');
+                } else {
+                    console.error('❌ Failed to render categories section:', response.status);
+                    fallbackRenderCategories(section, container);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error rendering categories section:', error);
+                fallbackRenderCategories(section, container);
+            }
+        }
+
+        /**
+         * רינדור נוקשה של קטגוריות אם הטמפלט לא זמין
+         */
+        function fallbackRenderCategories(section, container) {
+            const titleText = getNestedValue(section, 'content.title.text', 'קטגוריות המוצרים שלנו');
+            const subtitleText = getNestedValue(section, 'content.subtitle.text', 'בחרו מתוך מגוון רחב של קטגוריות');
+            const bgColor = getNestedValue(section, 'styles.background-color', '#f9fafb');
+            const categories = getNestedValue(section, 'content.grid.categories', []);
+            
+            const html = `
+                <section style="
+                    background-color: ${bgColor};
+                    padding: 80px 20px;
+                    font-family: 'Noto Sans Hebrew', sans-serif;
+                    direction: rtl;
+                ">
+                    <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
+                        <h2 style="font-size: 36px; font-weight: bold; margin-bottom: 20px; color: #1f2937;">
+                            ${titleText}
+                        </h2>
+                        <p style="font-size: 18px; color: #6b7280; margin-bottom: 48px;">
+                            ${subtitleText.replace(/\n/g, '<br>')}
+                        </p>
+                        <div style="
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                            gap: 24px;
+                        ">
+                            ${categories.map(category => `
+                                <a href="${category.url || '#'}" style="
+                                    background: white;
+                                    border-radius: 12px;
+                                    overflow: hidden;
+                                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                                    transition: all 0.3s ease;
+                                    text-decoration: none;
+                                    color: inherit;
+                                ">
+                                    ${category.image ? `<img src="${category.image}" alt="${category.name}" style="width: 100%; height: 200px; object-fit: cover;">` : ''}
+                                    <div style="padding: 20px; font-size: 18px; font-weight: 600; text-align: center; color: #1f2937;">
+                                        ${category.name}
+                                    </div>
+                                </a>
+                            `).join('')}
+                        </div>
                     </div>
                 </section>
             `;
